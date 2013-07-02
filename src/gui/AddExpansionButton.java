@@ -3,6 +3,8 @@ package gui;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashSet;
+import java.util.Vector;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
@@ -52,6 +54,7 @@ class AddExpansionButtonRenderer extends JButton implements TableCellRenderer {
 
 	  private String label;
 	  private String data;
+	  private int parentDesc;
 	  private String tableName;
 
 	  private boolean isPushed;
@@ -79,6 +82,7 @@ class AddExpansionButtonRenderer extends JButton implements TableCellRenderer {
 	    }
 	    label = (value == null) ? "" : value.toString();
 	    data = table.getValueAt(row, 1).toString();
+	    parentDesc = Integer.parseInt(table.getValueAt(row, 7).toString());
 	    button.setText(label);
 	    isPushed = true;
 	    tableName = table.getName();
@@ -98,12 +102,25 @@ class AddExpansionButtonRenderer extends JButton implements TableCellRenderer {
              , JOptionPane.INFORMATION_MESSAGE);
            
 	    	 if (selection == JOptionPane.OK_OPTION)
-	    		 if (tableName.equals(JudgePanel.ANCIENTPANEL))
-	    			 JudgePanel.dm1.addRow(new Object[]{data});
-	    		 else
-	    			 JudgePanel.dm2.addRow(new Object[]{data});
+	    		 if (tableName.equals(JudgePanel.ANCIENTPANEL)){
+	    			 HashSet<String> ancientSet = new HashSet<String>();
+	    			 for(Object element:JudgePanel.ancientExpDm.getDataVector())
+	    				 ancientSet.add((String) ((Vector<?>) element).get(0));
+	    			 if (ancientSet.contains(data))
+	    				 JOptionPane.showMessageDialog(null, "ההרחבה כבר קיימת", "הכנסת נתונים שגויה", 0);
+	    			 else	 
+	    				 JudgePanel.ancientExpDm.addRow(new Object[]{data,parentDesc});
+	    		 }
+	    		 else {
+	    			 HashSet<String> modernSet = new HashSet<String>();
+	    			 for(Object element:JudgePanel.modernExpDm.getDataVector())
+	    				 modernSet.add((String) ((Vector<?>) element).get(0));
+	    			 if (modernSet.contains(data))
+	    				 JOptionPane.showMessageDialog(null, "ההרחבה כבר קיימת", "הכנסת נתונים שגויה", 0);
+	    			 else
+	    				 JudgePanel.modernExpDm.addRow(new Object[]{data,parentDesc});
+	    			 }
 	      
-	      // System.out.println(label + ": Ouch!");
 	    }
 	    isPushed = false;
 	    return new String(label);

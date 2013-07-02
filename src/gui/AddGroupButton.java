@@ -98,12 +98,26 @@ class AddGroupButtonRenderer extends JButton implements TableCellRenderer {
              , JOptionPane.INFORMATION_MESSAGE);
            
 	    	 if (selection == JOptionPane.OK_OPTION)
-	    		 if (tableName.equals(JudgePanel.ANCIENTPANEL))
-	    			 JudgePanel.ancientModel.addElement(data);
-	    		 else
-	    			 JudgePanel.modernModel.addElement(data);
-	      
-	      // System.out.println(label + ": Ouch!");
+	    		 if (tableName.equals(JudgePanel.ANCIENTPANEL)){
+	    			 boolean bFound = false;
+	    			 for(int i=0; i<JudgePanel.ancientComboBoxModel.getSize(); i++)
+	    				 if(JudgePanel.ancientComboBoxModel.getElementAt(i).equals(data)){
+	    					 JOptionPane.showMessageDialog(null, "הקבוצה כבר קיימת", "הכנסת נתונים שגויה", 0);
+	    					 bFound = true;
+	    				 }
+	    			 if (!bFound)
+	    				 JudgePanel.ancientComboBoxModel.addElement(data);
+	    		 }
+	    		 else {
+	    			 boolean bFound = false;
+					 for(int i=0; i<JudgePanel.modernComboBoxModel.getSize(); i++)
+						 if(JudgePanel.modernComboBoxModel.getElementAt(i).equals(data)){
+							 JOptionPane.showMessageDialog(null, "הקבוצה כבר קיימת", "הכנסת נתונים שגויה", 0);
+							 bFound = true;
+					 }
+					 if (!bFound)
+			    			 JudgePanel.modernComboBoxModel.addElement(data);
+	    		 }
 	    }
 	    isPushed = false;
 	    return new String(label);

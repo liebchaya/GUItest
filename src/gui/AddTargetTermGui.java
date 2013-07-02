@@ -2,7 +2,7 @@ package gui;
 
 import java.awt.ComponentOrientation;
 import java.awt.GridLayout;
-import java.util.Arrays;
+import java.io.File;
 import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
@@ -19,7 +19,14 @@ public class AddTargetTermGui {
 		
 	}
 	
-	public String getTargetTerm(){
+	/**
+	 * Show a message box with a combo box that enables target term selection
+	 * based on the files in the folder or new target term insertion via text box
+	 * @param folder
+	 * @param fileSufix
+	 * @return target term
+	 */
+	public String getTargetTerm(String folder, String fileSufix){
 		JPanel panel = new JPanel(new GridLayout(5, 5));
 		JTextField text0 = new JTextField(10);  
 		JLabel label = new JLabel("רשימת מונחים:                                                ");
@@ -27,14 +34,22 @@ public class AddTargetTermGui {
 		label.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 		panel.add(label);  
 		
-		Vector<String> comboBoxItems = new Vector<String>(Arrays.asList(
-			    "מונח 1", "מונח 2", "מונח 3", "מונח 4", "מונח 5", "מונח 6", "מונח 7", "מונח 8", "מונח 9", "מונח 10", "מונח 11"));
-		DefaultComboBoxModel model = new DefaultComboBoxModel(comboBoxItems);
+		Vector<String> comboBoxItems = new Vector<String>();
 		
+		File dataFolder = new File(folder);
+		if (dataFolder.listFiles()==null){
+			JOptionPane.showMessageDialog(null, "לא נמצאו ערכים להצגה", "ערכים קיימים", 1);
+			return null;
+		}
+		for(File f:dataFolder.listFiles())
+			if (f.getName().endsWith(fileSufix))
+			comboBoxItems.add(f.getName().substring(0, f.getName().indexOf(".")));
+		
+		DefaultComboBoxModel model = new DefaultComboBoxModel(comboBoxItems);
 		JComboBox comboBox = new JComboBox(model);
 	    comboBox.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);                         
         ((JComponent)comboBox.getRenderer()).setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-//	    // Create the combo box editor
+	    // create the combo box editor
 	    comboBox.setEditable(false);
 	  
 	    panel.add(comboBox);
@@ -44,6 +59,10 @@ public class AddTargetTermGui {
 	    int result = JOptionPane.showConfirmDialog(null, panel, "הוספת מונח חדש", JOptionPane.OK_CANCEL_OPTION);  
 	    if (result == JOptionPane.OK_OPTION) {
 	    	String selection = text0.getText();
+	    	if(selection.trim().isEmpty()){
+	    		JOptionPane.showMessageDialog(null, "לא הוכנס ערך חדש", "הכנסת נתונים שגויה", 0);
+	    		selection = null;
+	    	}
 	      return selection;  
 	    }
 		return null;  

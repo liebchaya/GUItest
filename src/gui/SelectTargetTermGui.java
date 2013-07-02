@@ -2,7 +2,7 @@ package gui;
 
 import java.awt.ComponentOrientation;
 import java.awt.GridLayout;
-import java.util.Arrays;
+import java.io.File;
 import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
@@ -12,26 +12,47 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+/**
+ * Manage the target term selection using a message box
+ * @author HZ
+ *
+ */
 public class SelectTargetTermGui {
 
 	public SelectTargetTermGui(){
 		
 	}
 	
-	public String getTargetTerm(){
+	/**
+	 * Show a message box with a combo box that enables target term selection
+	 * based on the files in the folder
+	 * @param folder
+	 * @param fileSufix
+	 * @return target term
+	 */
+	public String getTargetTerm(String folder, String fileSufix){
 		JPanel panel = new JPanel(new GridLayout(5, 5));
 		JLabel label = new JLabel("בחר מונח:                                                ");
 		label.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 		panel.add(label);  
+
+		Vector<String> comboBoxItems = new Vector<String>();
 		
-		Vector<String> comboBoxItems = new Vector<String>(Arrays.asList(
-			    "מונח 1", "מונח 2", "מונח 3", "מונח 4", "מונח 5", "מונח 6", "מונח 7", "מונח 8", "מונח 9", "מונח 10", "מונח 11"));
+		File dataFolder = new File(folder);
+		if (dataFolder.listFiles()==null){
+			JOptionPane.showMessageDialog(null, "לא נמצאו ערכים לשיפוט", "ערכים לשיפוט", 1);
+			return null;
+		}
+		for(File f:dataFolder.listFiles())
+			if (f.getName().endsWith(fileSufix))
+			comboBoxItems.add(f.getName().substring(0, f.getName().indexOf(".")));
+	
 		DefaultComboBoxModel model = new DefaultComboBoxModel(comboBoxItems);
 		
 		JComboBox comboBox = new JComboBox(model);
 	    comboBox.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);                         
         ((JComponent)comboBox.getRenderer()).setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-//	    // Create the combo box editor
+//	    create the combo box editor
 	    comboBox.setEditable(false);
 	  
 	    panel.add(comboBox);

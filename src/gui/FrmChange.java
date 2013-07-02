@@ -6,14 +6,31 @@ import java.awt.ComponentOrientation;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 
+import code.Constants;
+import code.FileUtils;
+import code.ZipFilter;
+import code.ZipUtils;
+
+/**
+ * Main class that manages the menu and switches windows
+ * @author HZ
+ *
+ */
 public class FrmChange extends JFrame{
 
 private JPanel treePanel;
@@ -22,15 +39,13 @@ private JPanel emptyPanel = new JPanel();
 
 
 public FrmChange(){
+//	change message box interface to Hebrew
 	UIManager.put("OptionPane.yesButtonText", "כן");  
 	UIManager.put("OptionPane.noButtonText", "לא");  
 	UIManager.put("OptionPane.cancelButtonText", "ביטול");
 	UIManager.put("OptionPane.okButtonText", "אישור");
     setDefaultCloseOperation(EXIT_ON_CLOSE);
-    treePanel = TreePanel.getTreePanel();
-    judgePane = JudgePanel.createMainView();
     initMenu();
-//    panel2.setBackground(Color.RED);
     setLayout(new BorderLayout());
 }
 
@@ -48,6 +63,9 @@ private class MenuAction implements ActionListener {
 
 }
 
+/**
+ * Initialize the menu and its events
+ */
 private void initMenu() {
 	 JMenuBar menubar = new JMenuBar();
      menubar.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
@@ -59,13 +77,70 @@ private void initMenu() {
          @Override
          public void actionPerformed(ActionEvent ae) {
         	 changePanel(emptyPanel);
-      	   SelectTargetTermGui t = new SelectTargetTermGui();
-      	   if(t.getTargetTerm()!= null)
-      		 changePanel(judgePane);
-      	   
-         }
+        	 // message box for target term selection
+	      	 SelectTargetTermGui t = new SelectTargetTermGui();
+	      	 String targetTerm = t.getTargetTerm(Constants.workingDir+Constants.judgmentsDir,Constants.judgmentFileSufix);
+	      	 if(targetTerm != null){
+	      	 try {
+					judgePane = JudgePanel.createJudgementView(targetTerm);
+				 } catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				 }
+	      		 changePanel(judgePane);
+	      	  } 
+	         }
      });
      judgeMenu.add(judgeItem1);
+     JMenuItem judgeItem2 = new JMenuItem("שליחה");
+     judgeItem2.addActionListener(new ActionListener(){
+         @Override
+         public void actionPerformed(ActionEvent ae) {
+        	 changePanel(emptyPanel);
+        	 File judgmentDir = new File(Constants.workingDir+Constants.judgmentsDir);
+        	 if (judgmentDir.listFiles() != null && judgmentDir.listFiles().length > 0){
+        		 JOptionPane.showMessageDialog(null, "נותרו ערכים שלא נשפטו", "שגיאה בשליחת הנתונים", 0);
+        	 } else {
+        		 String zipPath = ZipUtils.zip(Constants.workingDir);
+        		 if (zipPath == null)
+        			 JOptionPane.showMessageDialog(null, "בעיה בקיבוץ התיקיה", "שגיאה בשליחת הנתונים", 0);
+        		 else
+        			 JOptionPane.showMessageDialog(null, "הקובץ הנוצר הוא\n"+zipPath, "נתונים נשלחו בהצלחה", 1);
+        	 } 
+         }
+     });
+     judgeMenu.add(judgeItem2);
+     JMenuItem judgeItem3 = new JMenuItem("הזנת קבצים");
+     judgeItem3.addActionListener(new ActionListener(){
+         @Override
+         public void actionPerformed(ActionEvent ae) {
+        	 changePanel(emptyPanel);
+        	 File judgmentDir = new File(Constants.workingDir+Constants.judgmentsDir);
+        	 if (judgmentDir.listFiles()!= null && judgmentDir.listFiles().length > 0){
+        		 JOptionPane.showMessageDialog(null, "נותרו ערכים שלא נשפטו", "שגיאה בשליחת הנתונים", 0);
+        	 } else {
+	        	 final JFileChooser fc = new JFileChooser();
+	        	 fc.addChoosableFileFilter(new ZipFilter());
+	        	 int returnVal = fc.showDialog(null,"פתיחה");
+	             if (returnVal == JFileChooser.APPROVE_OPTION) {
+	                 File file = fc.getSelectedFile();
+	                 //This is where a real application would open the file.
+	                 System.out.println(file.getName());
+	                 File workingDir = new File(Constants.workingDir);
+						try {
+							if(workingDir.exists())
+								FileUtils.deleteRecursive(workingDir);
+							ZipUtils.unzip(file.getAbsolutePath(), workingDir.getAbsolutePath().substring(0,workingDir.getAbsolutePath().lastIndexOf(File.separatorChar)));
+						} catch (FileNotFoundException e) {
+							JOptionPane.showMessageDialog(null, "בעיה במחיקת או פרישת קבצים", "שגיאה בקבלת הנתונים", 0);
+						}
+	                 
+	             } 
+        
+        	 } 
+         }
+     });
+     judgeMenu.add(judgeItem3);
      judgeMenu.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
      JMenuItem targetItem1 = new JMenuItem("הצג תזארוס");
      targetItem1.addActionListener(new ActionListener(){
@@ -73,11 +148,15 @@ private void initMenu() {
          public void actionPerformed(ActionEvent ae) {
         	 changePanel(emptyPanel);
       	   SelectTargetTermGui t = new SelectTargetTermGui();
-      	   if(t.getTargetTerm()!= null)
+      	 String targetTerm = t.getTargetTerm(Constants.workingDir+Constants.thesaurusDir,Constants.thesaurusFileSufix);
+      	 if(targetTerm != null){
+      		 treePanel = TreePanel.getTreePanel(targetTerm);
       		 changePanel(treePanel);
       	   
          }
-     });
+         }
+     }
+     );
      targetMenu.add(targetItem1);
      JMenuItem targetItem2 = new JMenuItem("הוסף מונח חדש");
      targetItem2.addActionListener(new ActionListener(){
@@ -85,7 +164,19 @@ private void initMenu() {
          public void actionPerformed(ActionEvent ae) {
         	 changePanel(emptyPanel);
       	   AddTargetTermGui t = new AddTargetTermGui();
-      	   t.getTargetTerm();
+      	   String selection = t.getTargetTerm(Constants.workingDir+Constants.thesaurusDir,Constants.thesaurusFileSufix);
+      	   if (selection != null){
+      		   File input = new File(Constants.workingDir+Constants.inputDir+"/"+Constants.inputFileName);
+      		   FileWriter out;
+			try {
+				out = new FileWriter(input,true);
+				out.write(selection + "\n");
+		      	out.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}   
+      	   }
       	   
          }
      });
@@ -93,16 +184,6 @@ private void initMenu() {
      menubar.add(targetMenu);
      menubar.add(judgeMenu);
      this.setJMenuBar(menubar);
-//    JMenuBar menubar = new JMenuBar();
-//    JMenu menu = new JMenu("Menu");
-//    JMenuItem menuItem1 = new JMenuItem("Panel1");
-//    JMenuItem menuItem2 = new JMenuItem("Panel2");
-//    menubar.add(menu);
-//    menu.add(menuItem1);
-//    menu.add(menuItem2);
-//    setJMenuBar(menubar);
-//    menuItem1.addActionListener(new MenuAction(treePanel));
-//    menuItem2.addActionListener(new MenuAction(emptyPanel));
 
 }
 
@@ -114,13 +195,6 @@ private void changePanel(JPanel panel) {
     update(getGraphics());
 }
 
-private void changePane(JTabbedPane judgePane2) {
-    getContentPane().removeAll();
-    getContentPane().add(judgePane2, BorderLayout.CENTER);
-//    getContentPane().doLayout();
-    this.validate();
-    update(getGraphics());
-}
 
 public static void main(String[] args) {
     FrmChange frame = new FrmChange();
