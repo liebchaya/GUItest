@@ -12,6 +12,9 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 
+import code.NgramViewer;
+import code.StringUtils;
+
 class AddGroupButtonRenderer extends JButton implements TableCellRenderer {
 
 	  /**
@@ -89,7 +92,7 @@ class AddGroupButtonRenderer extends JButton implements TableCellRenderer {
 	    if (isPushed) {
 	      // 
 	      //
-	    	
+	    	data = NgramViewer.mergeNgrams(StringUtils.convertStringToSet(data));
 	    	 int selection = JOptionPane.showConfirmDialog(
                      null
              , " האם אתה בטוח שברצונך להוסיף את הקבוצה:" + data + "?"

@@ -54,7 +54,7 @@ public class SubmitJugementGui {
 	    	}
 	      Vector<Integer> vec =  new Vector<Integer>();
 	      vec.add(0, Integer.parseInt(selection2));
-	      vec.add(0, Integer.parseInt(selection1));
+	      vec.add(1, Integer.parseInt(selection1));
 	      return vec;
 	      
 	    }

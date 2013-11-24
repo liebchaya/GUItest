@@ -4,12 +4,19 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -20,9 +27,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
+import javax.swing.plaf.FontUIResource;
 
 import code.Constants;
 import code.FileUtils;
+import code.StringUtils;
 import code.ZipFilter;
 import code.ZipUtils;
 
@@ -39,6 +48,22 @@ private JPanel emptyPanel = new JPanel();
 
 
 public FrmChange(){
+	FontUIResource font = new FontUIResource("Dialog", Font.PLAIN, 20);
+	UIManager.put("Table.font", font); 
+	UIManager.put("Panel.font", font);
+	UIManager.put("Button.font", font);
+	UIManager.put("Menu.font", font);
+	UIManager.put("Label.font", font);
+	UIManager.put("ComboBox.font", font);
+	UIManager.put("MenuItem.font", font);
+	UIManager.put("TabbedPane.font", font);
+	UIManager.put("Tree.font", font);
+	
+	
+	
+//	UIManager.put("swing.plaf.metal.controlFont", font);
+	UIManager.getLookAndFeelDefaults().put("defaultFont",new Font("Dialog", Font.PLAIN, 20));
+//	-Dswing.plaf.metal.controlFont=Dialog-20
 //	change message box interface to Hebrew
 	UIManager.put("OptionPane.yesButtonText", "כן");  
 	UIManager.put("OptionPane.noButtonText", "לא");  
@@ -47,6 +72,7 @@ public FrmChange(){
     setDefaultCloseOperation(EXIT_ON_CLOSE);
     initMenu();
     setLayout(new BorderLayout());
+    System.out.println(Constants.workingDir);
 }
 
 private class MenuAction implements ActionListener {
@@ -79,10 +105,16 @@ private void initMenu() {
         	 changePanel(emptyPanel);
         	 // message box for target term selection
 	      	 SelectTargetTermGui t = new SelectTargetTermGui();
-	      	 String targetTerm = t.getTargetTerm(Constants.workingDir+Constants.judgmentsDir,Constants.judgmentFileSufix);
+	      	 String targetTerm = null;
+			try {
+				targetTerm = t.getTargetTerm(Constants.workingDir+Constants.inputDir+"/"+Constants.inputFileName, Constants.workingDir+Constants.judgmentsDir,Constants.judgmentFileSufix);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 	      	 if(targetTerm != null){
 	      	 try {
-					judgePane = JudgePanel.createJudgementView(targetTerm);
+					judgePane = JudgePanel.createJudgementView(targetTerm,t.getM_targetTerm());
 				 } catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -92,6 +124,32 @@ private void initMenu() {
 	         }
      });
      judgeMenu.add(judgeItem1);
+     JMenuItem judgeItem12 = new JMenuItem("ערוך שיפוט");
+     judgeItem12.addActionListener(new ActionListener(){
+         @Override
+         public void actionPerformed(ActionEvent ae) {
+        	 changePanel(emptyPanel);
+        	 // message box for target term selection
+	      	 SelectTargetTermGui t = new SelectTargetTermGui();
+	      	 String targetTerm = null;
+			try {
+				targetTerm = t.getTargetTerm(Constants.workingDir+Constants.inputDir+"/"+Constants.inputFileName, Constants.workingDir+Constants.annotatedDir,Constants.judgmentFileSufix);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+	      	 if(targetTerm != null){
+	      	 try {
+					judgePane = EditJudgePanel.createJudgementView(targetTerm,t.getM_targetTerm());
+				 } catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				 }
+	      		 changePanel(judgePane);
+	      	  } 
+	         }
+     });
+     judgeMenu.add(judgeItem12);
      JMenuItem judgeItem2 = new JMenuItem("שליחה");
      judgeItem2.addActionListener(new ActionListener(){
          @Override
@@ -101,6 +159,42 @@ private void initMenu() {
         	 if (judgmentDir.listFiles() != null && judgmentDir.listFiles().length > 0){
         		 JOptionPane.showMessageDialog(null, "נותרו ערכים שלא נשפטו", "שגיאה בשליחת הנתונים", 0);
         	 } else {
+        		 try {
+	        		 // clean exapnsions file
+	        		 File file = new File(Constants.workingDir+Constants.inputDir+"\\"+Constants.expFileName);
+	    		     FileInputStream fis;
+					 fis = new FileInputStream(file);
+					 byte[] data = new byte[(int)file.length()];
+	    		     fis.read(data);
+	    		     fis.close();
+	    		     
+	    		     String content = new String(data);
+	    		     content = StringUtils.cleanString(content);
+	    		     BufferedWriter writer= new BufferedWriter(new FileWriter(file));
+	    		     Pattern pattern = Pattern.compile("\n");
+    				 Matcher matcher = pattern.matcher(content);
+    				 // using Matcher find(), group(), start() and end() methods
+    				 int startPos = 0;
+    				 while (matcher.find()) {
+	    				String line = content.substring(startPos,matcher.start());
+    					if (line.split("\t")[1].trim().isEmpty()){
+    						startPos = matcher.end();
+    						continue;
+    					}
+	    				writer.write(line+"\n");
+	    				startPos = matcher.end();
+	    			}
+	    			writer.write(content.substring(startPos)+"\n");		
+					writer.close();
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+    		    
+    		        
         		 String zipPath = ZipUtils.zip(Constants.workingDir);
         		 if (zipPath == null)
         			 JOptionPane.showMessageDialog(null, "בעיה בקיבוץ התיקיה", "שגיאה בשליחת הנתונים", 0);
@@ -127,15 +221,19 @@ private void initMenu() {
 	                 //This is where a real application would open the file.
 	                 System.out.println(file.getName());
 	                 File workingDir = new File(Constants.workingDir);
-						try {
-							if(workingDir.exists())
+						if(workingDir.exists())
+							try {
 								FileUtils.deleteRecursive(workingDir);
-							ZipUtils.unzip(file.getAbsolutePath(), workingDir.getAbsolutePath().substring(0,workingDir.getAbsolutePath().lastIndexOf(File.separatorChar)));
-						} catch (FileNotFoundException e) {
-							JOptionPane.showMessageDialog(null, "בעיה במחיקת או פרישת קבצים", "שגיאה בקבלת הנתונים", 0);
-						}
+							} catch (FileNotFoundException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						ZipUtils.unzip(file.getAbsolutePath(), workingDir.getAbsolutePath());
 	                 
 	             } 
+	             File prevTargetTerms = new File(Constants.workingDir+Constants.inputDir+"/"+Constants.newInputFileName);
+	             if (prevTargetTerms.exists())
+	            	 prevTargetTerms.delete();
         
         	 } 
          }
@@ -148,9 +246,15 @@ private void initMenu() {
          public void actionPerformed(ActionEvent ae) {
         	 changePanel(emptyPanel);
       	   SelectTargetTermGui t = new SelectTargetTermGui();
-      	 String targetTerm = t.getTargetTerm(Constants.workingDir+Constants.thesaurusDir,Constants.thesaurusFileSufix);
+      	 String targetTerm=null;
+		try {
+			targetTerm = t.getTargetTerm(Constants.workingDir+Constants.thesaurusDir+"/"+Constants.theasaurusTermsFileName,Constants.workingDir+Constants.thesaurusDir,Constants.thesaurusFileSufix);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
       	 if(targetTerm != null){
-      		 treePanel = TreePanel.getTreePanel(targetTerm);
+      		 treePanel = TreePanel.getTreePanel(targetTerm, t.getM_targetTerm());
       		 changePanel(treePanel);
       	   
          }
@@ -164,12 +268,18 @@ private void initMenu() {
          public void actionPerformed(ActionEvent ae) {
         	 changePanel(emptyPanel);
       	   AddTargetTermGui t = new AddTargetTermGui();
-      	   String selection = t.getTargetTerm(Constants.workingDir+Constants.thesaurusDir,Constants.thesaurusFileSufix);
+      	   String selection=null;
+		try {
+			selection = t.getTargetTerm(Constants.workingDir+Constants.thesaurusDir+"/"+Constants.theasaurusTermsFileName,Constants.workingDir+Constants.thesaurusDir,Constants.thesaurusFileSufix);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
       	   if (selection != null){
-      		   File input = new File(Constants.workingDir+Constants.inputDir+"/"+Constants.inputFileName);
+      		   File input = new File(Constants.workingDir+Constants.inputDir+"/"+Constants.newInputFileName);
       		   FileWriter out;
 			try {
-				out = new FileWriter(input,true);
+				out = new FileWriter(input);
 				out.write(selection + "\n");
 		      	out.close();
 			} catch (IOException e) {
@@ -187,7 +297,7 @@ private void initMenu() {
 
 }
 
-private void changePanel(JPanel panel) {
+public void changePanel(JPanel panel) {
     getContentPane().removeAll();
     getContentPane().add(panel, BorderLayout.CENTER);
 //    getContentPane().doLayout();
@@ -198,9 +308,13 @@ private void changePanel(JPanel panel) {
 
 public static void main(String[] args) {
     FrmChange frame = new FrmChange();
+    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+    frame.setTitle("מערכת לבניית תזארוס");
     frame.setBounds(200, 200, 300, 200);
     frame.setVisible(true);
+    
 
 }
+
 
 }

@@ -5,39 +5,20 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
-import java.awt.EventQueue;
+import java.awt.Font;
 
-import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -50,24 +31,20 @@ import javax.swing.JButton;
 import code.Constants;
 import code.DataFiles;
 import code.FileUtils;
+import code.StringUtils;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream.GetField;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Locale;
+import java.util.HashMap;
+import java.util.Set;
 import java.util.Vector;
-import java.awt.FlowLayout;
-import java.awt.CardLayout;
+
 
 public class JudgePanel{
 
@@ -83,21 +60,33 @@ public class JudgePanel{
 	final static DefaultTableModel ancientExpDm = new DefaultTableModel();
 	final static DefaultTableModel modernExpDm = new DefaultTableModel();
 	
+	private static HashMap<Integer,Integer> modernGroupsConvertMap;
+	private static HashMap<Integer,Integer> ancientGroupsConvertMap;
+	private static int maxGroupId;
+	private static Set<Integer> ancientPrevRows;
+	private static Set<Integer> modernPrevRows;
+	
 	private static JTable ancientTable; 
 	private static JTable modernTable;
 	
 	private static JTable ancientExpTable; 
 	private static JTable modernExpTable;
+	
+	private static JPanel m_panel;
 
 	/**
 	 * Create grid view for manual judgment
-	 * @param targetTerm
+	 * @param targetTermId
 	 * @return
 	 * @throws IOException 
 	 */
-	public static JPanel createJudgementView(String targetTerm) throws IOException {
+	public static JPanel createJudgementView(String targetTermId, String targetTerm) throws IOException {
 
-		JPanel panel = new JPanel(new BorderLayout());
+		m_panel = new JPanel(new BorderLayout());
+		
+		final JLabel Text = new JLabel(targetTerm,JLabel.CENTER);
+		m_panel.add(Text,  BorderLayout.NORTH);
+	    
 		//Two tabs for modern and ancient annotation
 		JTabbedPane tabbedPane = new JTabbedPane();
 		tabbedPane.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
@@ -126,7 +115,7 @@ public class JudgePanel{
 
 
 	    final JButton SaveBtn = new JButton("שמור שיפוטים");
-	    SaveBtn.setName(targetTerm);
+	    SaveBtn.setName(targetTermId);
 		SaveBtn.addActionListener(new ActionListener(){
 		public void actionPerformed(ActionEvent e) {
 			
@@ -134,39 +123,90 @@ public class JudgePanel{
 				Vector<Integer> infoVec = submit.getJudgementInfo();
 				if (infoVec!=null){
 					try {
+						int ancientRowNum = (infoVec.get(0)<=ancientTable.getRowCount()?infoVec.get(0):ancientTable.getRowCount());
+						int modernRowNum = (infoVec.get(1)<=modernTable.getRowCount()?infoVec.get(1):modernTable.getRowCount());
+						int ancientValid = validateTableData(ancientRowNum,true);
+						if (ancientValid != -1){
+							JOptionPane.showMessageDialog(null, "עליך להכניס קבוצה בשורה "+ancientValid, "שגיאה בטבלת העתיק",JOptionPane.ERROR_MESSAGE);
+							return;
+						}
+						int modernValid = validateTableData(modernRowNum,false);
+						if (modernValid != -1){
+							JOptionPane.showMessageDialog(null, "עליך להכניס קבוצה בשורה "+modernValid, "שגיאה בטבלת המודרני",JOptionPane.ERROR_MESSAGE);
+							return;
+						}
+						
+						ancientValid = validateTableData2(ancientRowNum,true);
+						if (ancientValid != -1){
+							JOptionPane.showMessageDialog(null, "בדוק שיפוט בשורה "+ancientValid, "שגיאה בטבלת העתיק",JOptionPane.ERROR_MESSAGE);
+							return;
+						}
+						modernValid = validateTableData2(modernRowNum,false);
+						if (modernValid != -1){
+							JOptionPane.showMessageDialog(null, "בדוק שיפוט בשורה "+modernValid, "שגיאה בטבלת המודרני",JOptionPane.ERROR_MESSAGE);
+							return;
+						}
+						
+						File annoDir = new File(Constants.workingDir+Constants.annotatedDir);
+						if (!annoDir.exists())
+							annoDir.mkdir();
 						// write annotation file to a new folder
 						BufferedWriter writer = new BufferedWriter(new FileWriter(Constants.workingDir+Constants.annotatedDir+"/"+SaveBtn.getName()+Constants.judgmentFileSufix));
 						writer.write("\n");
-						int rowNum = (infoVec.get(0)<=ancientTable.getRowCount()?infoVec.get(0):ancientTable.getRowCount());
-						for(int i=0; i<rowNum; i++){
+						int groupNum = (maxGroupId>0?maxGroupId:-1);
+						for(int i=0; i<ancientRowNum; i++){
 							writer.write(ancientTable.getValueAt(i, 1).toString()+"\t");
 							writer.write(ancientTable.getValueAt(i, 6).toString()+"\t");
 							writer.write("1\t");
 							writer.write(((Boolean) ancientTable.getValueAt(i, 2)?1:0) +"\t");
-							writer.write(ancientComboBoxModel.getIndexOf(ancientTable.getValueAt(i, 3).toString())+"\t");
+							int ancientComboIndex = ancientComboBoxModel.getIndexOf(ancientTable.getValueAt(i, 3).toString());
+							if (ancientComboIndex == -1 || ancientComboIndex == 0)
+								writer.write("-1\t");
+							else {
+								if (ancientGroupsConvertMap.containsKey(ancientComboIndex))
+									writer.write(ancientGroupsConvertMap.get(ancientComboIndex)+"\t");
+								else {
+									groupNum++;
+									writer.write(groupNum+"\t");
+								}
+							}
 							writer.write(ancientTable.getValueAt(i, 7).toString()+"\n");
 						}
-						rowNum = (infoVec.get(1)<=modernTable.getRowCount()?infoVec.get(1):modernTable.getRowCount());
-						for(int i=0; i<rowNum; i++){
+						
+						for(int i=0; i<modernRowNum; i++){
 							writer.write(modernTable.getValueAt(i, 1).toString()+"\t");
 							writer.write(modernTable.getValueAt(i, 6).toString()+"\t");
 							writer.write("0\t");
 							writer.write(((Boolean) modernTable.getValueAt(i, 2)?1:0) +"\t");
-							writer.write(modernComboBoxModel.getIndexOf(modernTable.getValueAt(i, 3).toString())+"\t");
+							int modernComboIndex = modernComboBoxModel.getIndexOf(modernTable.getValueAt(i, 3).toString());
+							if (modernComboIndex == -1 || modernComboIndex == 0)
+								writer.write("-1\t");
+							else {
+								if (modernGroupsConvertMap.containsKey(modernComboIndex))
+									writer.write(modernGroupsConvertMap.get(modernComboIndex)+"\t");
+								else {
+									groupNum++;
+									writer.write(groupNum+"\t");
+								}
+							}
 							writer.write(modernTable.getValueAt(i, 7).toString()+"\n");
 						}
 						writer.close();
 						// remove judgment file
 						File judgmentFile = new File(Constants.workingDir+Constants.judgmentsDir+"/"+SaveBtn.getName()+Constants.judgmentFileSufix);
 						judgmentFile.delete();
-						
+						File groupsFile = new File(Constants.workingDir+Constants.judgmentsDir+"/"+SaveBtn.getName()+Constants.groupsFileSufix);
+						if (groupsFile.exists()){
+							FileUtils.copyFileUsingFileStreams(groupsFile, new File(Constants.workingDir+Constants.annotatedDir+"/"+groupsFile.getName()));
+							groupsFile.delete();
+						}
 						// write the expansion file
 						writer = new BufferedWriter(new FileWriter(Constants.workingDir+Constants.inputDir+"/"+Constants.expFileName,true));
-						rowNum = ancientExpTable.getRowCount();
+						int rowNum = ancientExpTable.getRowCount(); 
 						for(int i=0; i<rowNum; i++){
 							String targetTerm = SaveBtn.getName();
 							writer.write(targetTerm + "\t");
-							writer.write(ancientExpTable.getValueAt(i, 0).toString()+"\t");
+							writer.write(StringUtils.cleanString(ancientExpTable.getValueAt(i, 0).toString())+"\t");
 							writer.write(ancientExpTable.getValueAt(i, 1).toString()+"\t");
 							writer.write("1\n");
 						}
@@ -174,7 +214,7 @@ public class JudgePanel{
 						for(int i=0; i<rowNum; i++){
 							String targetTerm = SaveBtn.getName();
 							writer.write(targetTerm + "\t");
-							writer.write(modernExpTable.getValueAt(i, 0).toString()+"\t");
+							writer.write(StringUtils.cleanString(modernExpTable.getValueAt(i, 0).toString())+"\t");
 							writer.write(modernExpTable.getValueAt(i, 1).toString()+"\t");
 							writer.write("0\n");
 						}
@@ -184,12 +224,15 @@ public class JudgePanel{
 						System.out.println("Problem creating table file: " + e2);
 						}
 					SaveBtn.setEnabled(false);
+					m_panel.removeAll();
+					m_panel.add(new JPanel());
+					FrmChange.getFrames()[0].validate();
 				}
 				}
 		});
-		panel.add(SaveBtn,  BorderLayout.SOUTH);
+		m_panel.add(SaveBtn,  BorderLayout.SOUTH);
 		
-		loadTableData(targetTerm);
+		loadTableData(targetTermId);
 		loadExpTable();
 	    
 	    
@@ -201,9 +244,9 @@ public class JudgePanel{
         tabbedPane.addTab(MODERNPANEL, modernPanel);
 //      tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
         
-       panel.add(tabbedPane);
+       m_panel.add(tabbedPane);
        
-       return panel;
+       return m_panel;
 	}
 
 	/**
@@ -224,7 +267,24 @@ public class JudgePanel{
 	                return c;
 	            }};
 	            ancientExpTable.getColumnModel().getColumn(1).setMinWidth(0);  
-	            ancientExpTable.getColumnModel().getColumn(1).setMaxWidth(0);
+	            ancientExpTable.getColumnModel().getColumn(1).setMaxWidth(0);  
+	    		ancientExpTable.getTableHeader().getColumnModel().getColumn(1).setMinWidth(0);  
+	    		ancientExpTable.getTableHeader().getColumnModel().getColumn(1).setMaxWidth(0);
+	    		
+	    		ancientExpTable.addMouseListener(new MouseAdapter() {
+	    	        	@Override
+	    	            public void mouseReleased(MouseEvent e) {
+	    	        		JTable table = (JTable)e.getSource();
+	    	                int rowindex = table.getSelectedRow();
+	    	                int colindex = table.getSelectedColumn();
+	    	                if (colindex != 0)
+	    	                    return;
+	    	                if (e.isPopupTrigger() && e.getComponent() instanceof JTable ) {
+	    	                	ShowFullCellTextGui s = new ShowFullCellTextGui();
+	    	                	s.showWindow(table.getValueAt(rowindex, colindex).toString(),true, rowindex, true);
+	    	                }
+	    	            }
+	    	        });
 	    		
 	    modernExpDm.setDataVector(new Vector(),dummyHeader);
 	    modernExpTable = new JTable(modernExpDm){
@@ -236,16 +296,40 @@ public class JudgePanel{
                 return c;
             }};
             
+            modernExpTable.addMouseListener(new MouseAdapter() {
+	        	@Override
+	            public void mouseReleased(MouseEvent e) {
+	        		JTable table = (JTable)e.getSource();
+	                int rowindex = table.getSelectedRow();
+	                int colindex = table.getSelectedColumn();
+	                if (colindex != 0)
+	                    return;
+	                if (e.isPopupTrigger() && e.getComponent() instanceof JTable ) {
+	                	ShowFullCellTextGui s = new ShowFullCellTextGui();
+	                	s.showWindow(table.getValueAt(rowindex, colindex).toString(),true, rowindex,false);
+	                }
+	            }
+	        });
 	}
 	
 	private static void loadTableData(String targetTerm) throws IOException{
 		final DataFiles df = new DataFiles(Constants.workingDir+Constants.judgmentsDir);
 		// load previous groups to the list box
 		df.loadDataFile2Table(targetTerm,Constants.judgmentFileSufix);
+		ancientComboBoxModel.removeAllElements();
+		modernComboBoxModel.removeAllElements();
 		for(String element:df.getM_ancientGroups())
 			ancientComboBoxModel.addElement(element);
 		for(String element:df.getM_modernGroups())
 			modernComboBoxModel.addElement(element);
+		
+		modernGroupsConvertMap = df.getM_modernGroupsConvertMap();
+		ancientGroupsConvertMap = df.getM_ancientGroupsConvertMap();
+		maxGroupId = df.getM_maxGroupId();
+		
+		ancientPrevRows = df.getM_ancientPrevJudgments();
+		modernPrevRows = df.getM_modernPrevJudgments();
+		
 		
 		//load data tables
 		DefaultTableModel ancientDm = new DefaultTableModel(){
@@ -271,7 +355,24 @@ public class JudgePanel{
             if (vColIndex == 0)
             	c.setBackground(new Color(204,255,153));
             return c;
-        }};
+        }
+	    };
+        
+        ancientTable.addMouseListener(new MouseAdapter() {
+        	@Override
+            public void mouseReleased(MouseEvent e) {
+        		JTable table = (JTable)e.getSource();
+                int rowindex = table.getSelectedRow();
+                int colindex = table.getSelectedColumn();
+                if (colindex != 1)
+                    return;
+                if (e.isPopupTrigger() && e.getComponent() instanceof JTable ) {
+                	ShowFullCellTextGui s = new ShowFullCellTextGui();
+                	s.showWindow(table.getValueAt(rowindex, colindex).toString(),false, rowindex,true);
+                }
+            }
+        });
+        
 	    ancientTable.setName(ANCIENTPANEL);
 	    JTableHeader ancientHeader = ancientTable.getTableHeader();
 	    ancientHeader.setBackground(new Color(255,255,153));
@@ -301,6 +402,22 @@ public class JudgePanel{
 	            	c.setBackground(new Color(204,255,153));
 	            return c;
 	        }};
+	        
+	        modernTable.addMouseListener(new MouseAdapter() {
+	        	@Override
+	            public void mouseReleased(MouseEvent e) {
+	        		JTable table = (JTable)e.getSource();
+	                int rowindex = table.getSelectedRow();
+	                int colindex = table.getSelectedColumn();
+	                if (colindex != 1)
+	                    return;
+	                if (e.isPopupTrigger() && e.getComponent() instanceof JTable ) {
+	                	ShowFullCellTextGui s = new ShowFullCellTextGui();
+	                	s.showWindow(table.getValueAt(rowindex, colindex).toString(),false, rowindex,false);
+	                }
+	            }
+	        });
+	        
 	    modernTable.setName(MODERNPANEL);
 	    JTableHeader modernHeader = modernTable.getTableHeader();
 	    modernHeader.setBackground(new Color(255,255,153));
@@ -312,18 +429,23 @@ public class JudgePanel{
 		JTable table;
 		JTable expTable;
 		DefaultComboBoxModel model;
+		Set<Integer> prev;
 		
 		if (isAncient) {
 			table = ancientTable;
 			model = ancientComboBoxModel;
 			expTable = ancientExpTable;
+			prev = ancientPrevRows;
 		}
 		else {
 			table = modernTable;
 			model = modernComboBoxModel;
 			expTable = modernExpTable;
+			prev = modernPrevRows;
 		}
 		
+		table.getTableHeader().setFont(new Font("Dialg", Font.PLAIN, 20));
+		table.setRowHeight(table.getRowHeight()+5);
 		table.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 		
 		table.getColumnModel().getColumn(6).setMinWidth(0);  
@@ -344,46 +466,64 @@ public class JudgePanel{
 		rightRenderer.setHorizontalAlignment( JLabel.RIGHT );
 		table.getColumnModel().getColumn(1).setCellRenderer(rightRenderer);
 		table.getColumnModel().getColumn(3).setCellRenderer(rightRenderer);
+		
 	    
 	    JComboBox comboBox = new JComboBox(model);
 	    comboBox.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);                         
-        ((JComponent)comboBox.getRenderer()).setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+//        ((JComponent)comboBox.getRenderer()).setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 //	    // Create the combo box editor
 //	    JComboBox comboBox = new JComboBox(ComboBoxTableModel.getValidStates());
 	    comboBox.setEditable(false);
+	    
+//	    comboBox.setSelectedItem(null);
 	    DefaultCellEditor editor = new DefaultCellEditor(comboBox);
+	    
+//	    MyCellEditor editor = new MyCellEditor(comboBox, prev);
 //
 //	    // Assign the editor to the second column
 	    TableColumnModel tcm = table.getColumnModel();
 	    tcm.getColumn(3).setCellEditor(editor);
+	    
+//	    tcm.getColumn(3).setMaxWidth(60);
+	    tcm.getColumn(2).setMaxWidth(50);
+	    tcm.getColumn(4).setMaxWidth(75);
+	    tcm.getColumn(5).setMaxWidth(75);
+	    
 //	    
-	    table.getColumn("הוספת קבוצה").setCellRenderer(new AddGroupButtonRenderer());
-	    table.getColumn("הוספת קבוצה").setCellEditor(
+	    table.getColumn("ה.קבוצה").setCellRenderer(new AddGroupButtonRenderer());
+	    table.getColumn("ה.קבוצה").setCellEditor(
 	            new AddGroupButtonEditor(new JCheckBox()));
 	    
-	    table.getColumn("הוספת הרחבה").setCellRenderer(new AddExpansionButtonRenderer());
-	    table.getColumn("הוספת הרחבה").setCellEditor(
+	    table.getColumn("ה.הרחבה").setCellRenderer(new AddExpansionButtonRenderer());
+	    table.getColumn("ה.הרחבה").setCellEditor(
 	            new AddExpansionButtonEditor(new JCheckBox()));
 	    
 	    TableColumn tc = tcm.getColumn(2); 
 	    tc.setCellRenderer(table.getDefaultRenderer(Boolean.class)); 
 	    tc.setCellEditor(table.getDefaultEditor(Boolean.class));
 	    
-	    table.getColumnModel().getColumn(0).setMinWidth(20);
-	    table.getColumnModel().getColumn(0).setMaxWidth(20);
-	    table.getColumnModel().getColumn(0).setPreferredWidth(20);
+	    table.getColumnModel().getColumn(1).setCellRenderer(new NgramsRenderer());
+	    
+	    table.getColumnModel().getColumn(0).setMinWidth(30);
+	    table.getColumnModel().getColumn(0).setMaxWidth(30);
+	    table.getColumnModel().getColumn(0).setPreferredWidth(30);
 	    DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
 	    centerRenderer.setHorizontalAlignment( JLabel.CENTER );
 	    table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
 	    
+	   
+	    expTable.setRowHeight(table.getRowHeight()+5);
 	    expTable.setShowGrid(false);
 	    expTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-	    expTable.getColumnModel().getColumn(0).setCellRenderer(rightRenderer);
+//	    expTable.getColumnModel().getColumn(0).setCellRenderer(rightRenderer);
+	    expTable.getColumnModel().getColumn(0).setCellRenderer(new NgramsRenderer());
+	    expTable.getColumnModel().getColumn(1).setMinWidth(0);  
+	    expTable.getColumnModel().getColumn(1).setMaxWidth(0);
 	    JScrollPane scrollTable = new JScrollPane(expTable);
 	    scrollTable.setColumnHeader(null);
-	    scrollTable.setPreferredSize(new Dimension(50, 0));
+	    scrollTable.setPreferredSize(new Dimension(200, 0));
 	    Box tableBox = new Box(BoxLayout.Y_AXIS);
-	    JLabel expLabel = new JLabel("הרחבות");
+	    JLabel expLabel = new JLabel("הרחבות                    ");
 	    tableBox.add(expLabel);
 	    tableBox.add(scrollTable);
 	    tableBox.setOpaque(true);
@@ -395,4 +535,50 @@ public class JudgePanel{
 	}
 
 
+	private static int validateTableData(int rowNum, boolean isAncient){
+		if (isAncient) {
+			for(int i=0; i<rowNum; i++){
+				boolean judge = (Boolean) ancientTable.getValueAt(i, 2);
+				int ancientComboIndex = ancientComboBoxModel.getIndexOf(ancientTable.getValueAt(i, 3).toString());
+				if (judge && (ancientComboIndex == -1 || ancientComboIndex == 0)){
+					return i+1;
+				}
+			}
+		}
+		else {
+			for(int i=0; i<rowNum; i++){
+				boolean judge = (Boolean) modernTable.getValueAt(i, 2);
+				int modernComboIndex = modernComboBoxModel.getIndexOf(modernTable.getValueAt(i, 3).toString());
+				if (judge && (modernComboIndex == -1 || modernComboIndex == 0)){
+					return i+1;
+				}
+			}
+		}
+		return -1;
+			
+	}
+
+
+private static int validateTableData2(int rowNum, boolean isAncient){
+	if (isAncient) {
+		for(int i=0; i<rowNum; i++){
+			boolean judge = (Boolean) ancientTable.getValueAt(i, 2);
+			int ancientComboIndex = ancientComboBoxModel.getIndexOf(ancientTable.getValueAt(i, 3).toString());
+			if (!judge && ancientComboIndex > 0){
+				return i+1;
+			}
+		}
+	}
+	else {
+		for(int i=0; i<rowNum; i++){
+			boolean judge = (Boolean) modernTable.getValueAt(i, 2);
+			int modernComboIndex = modernComboBoxModel.getIndexOf(modernTable.getValueAt(i, 3).toString());
+			if (!judge && modernComboIndex > 0){
+				return i+1;
+			}
+		}
+	}
+	return -1;
+		
+}
 }

@@ -14,6 +14,9 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 
+import code.NgramViewer;
+import code.StringUtils;
+
 class AddExpansionButtonRenderer extends JButton implements TableCellRenderer {
 
 	  /**
@@ -93,10 +96,10 @@ class AddExpansionButtonRenderer extends JButton implements TableCellRenderer {
 	    if (isPushed) {
 	      // 
 	      //
-	    	
+	    	 String formatedData = NgramViewer.mergeNgrams(StringUtils.convertStringToSet(data));
 	    	 int selection = JOptionPane.showConfirmDialog(
                      null
-             , " האם אתה בטוח שברצונך להוסיף את ההרחבה:" + data + "?"
+             , " האם אתה בטוח שברצונך להוסיף את ההרחבה:" + formatedData + "?"
              , "הוספת הרחבה חדשה"
              , JOptionPane.OK_CANCEL_OPTION
              , JOptionPane.INFORMATION_MESSAGE);
@@ -117,8 +120,10 @@ class AddExpansionButtonRenderer extends JButton implements TableCellRenderer {
 	    				 modernSet.add((String) ((Vector<?>) element).get(0));
 	    			 if (modernSet.contains(data))
 	    				 JOptionPane.showMessageDialog(null, "ההרחבה כבר קיימת", "הכנסת נתונים שגויה", 0);
-	    			 else
+	    			 else {
 	    				 JudgePanel.modernExpDm.addRow(new Object[]{data,parentDesc});
+	    			 }
+	    			 	
 	    			 }
 	      
 	    }

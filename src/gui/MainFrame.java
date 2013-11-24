@@ -279,7 +279,7 @@ public class MainFrame extends JFrame{
 //	    
 	    table.getColumn("הוספת קבוצה").setCellRenderer(new AddGroupButtonRenderer());
 	    table.getColumn("הוספת קבוצה").setCellEditor(
-	            new AddGroupButtonEditor(new JCheckBox()));
+	            new AddEditGroupButtonEditor(new JCheckBox()));
 	    
 	    table.getColumn("הוספת הרחבה").setCellRenderer(new AddExpansionButtonRenderer());
 	    table.getColumn("הוספת הרחבה").setCellEditor(
