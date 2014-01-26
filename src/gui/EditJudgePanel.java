@@ -101,6 +101,7 @@ public class EditJudgePanel{
 	private static int maxGroupId;
 	private static Set<Integer> ancientPrevRows;
 	private static Set<Integer> modernPrevRows;
+	private static HashMap<String,String> desc2groupMap;
 	
 	private static HashMap<Integer,LinkedList<String>> m_ancientExpanMap;
 	private static HashMap<Integer,LinkedList<String>> m_modernExpanMap;
@@ -193,7 +194,7 @@ public class EditJudgePanel{
 						String annoFile = Constants.workingDir+Constants.annotatedDir+"/"+SaveBtn.getName()+Constants.judgmentFileSufix;
 						BufferedWriter writer = new BufferedWriter(new FileWriter(annoFile+"_tmp"));
 						writer.write("\n");
-						int groupNum = (maxGroupId>0?maxGroupId:-1);
+						int groupNum = (maxGroupId>=0?maxGroupId:-1);
 						for(int i=0; i<ancientRowNum; i++){
 							writer.write(ancientTable.getValueAt(i, 1).toString()+"\t");
 							writer.write(ancientTable.getValueAt(i, 6).toString()+"\t");
@@ -210,7 +211,8 @@ public class EditJudgePanel{
 									writer.write(groupNum+"\t");
 								}
 							}
-							writer.write(ancientTable.getValueAt(i, 7).toString()+"\n");
+							writer.write(ancientTable.getValueAt(i, 7).toString()+"\t");
+							writer.write(ancientTable.getValueAt(i, 8).toString()+"\n");
 						}
 						
 						for(int i=0; i<modernRowNum; i++){
@@ -229,7 +231,8 @@ public class EditJudgePanel{
 									writer.write(groupNum+"\t");
 								}
 							}
-							writer.write(modernTable.getValueAt(i, 7).toString()+"\n");
+							writer.write(modernTable.getValueAt(i, 7).toString()+"\t");
+							writer.write(modernTable.getValueAt(i, 8).toString()+"\n");
 						}
 						writer.close();
 						// remove judgment file
@@ -430,10 +433,15 @@ public class EditJudgePanel{
 		df.loadDataFile2Table4Edit(targetTerm,Constants.judgmentFileSufix);
 		ancientComboBoxModel.removeAllElements();
 		modernComboBoxModel.removeAllElements();
-		for(String element:df.getM_ancientGroups())
+		desc2groupMap = new HashMap<String, String>();
+		for(String element:df.getM_ancientGroups()){
+//			String desc = NgramViewer.mergeNgrams(StringUtils.convertStringToList(element));
 			ancientComboBoxModel.addElement(element);
-		for(String element:df.getM_modernGroups())
+		}
+		for(String element:df.getM_modernGroups()){
+//			String desc = NgramViewer.mergeNgrams(StringUtils.convertStringToList(element));
 			modernComboBoxModel.addElement(element);
+		}
 		
 		modernGroupsConvertMap = df.getM_modernGroupsConvertMap();
 		ancientGroupsConvertMap = df.getM_ancientGroupsConvertMap();
@@ -575,6 +583,11 @@ public class EditJudgePanel{
 		table.getTableHeader().getColumnModel().getColumn(7).setMinWidth(0);  
 		table.getTableHeader().getColumnModel().getColumn(7).setMaxWidth(0);
 		
+		table.getColumnModel().getColumn(8).setMinWidth(0);  
+		table.getColumnModel().getColumn(8).setMaxWidth(0);  
+		table.getTableHeader().getColumnModel().getColumn(8).setMinWidth(0);  
+		table.getTableHeader().getColumnModel().getColumn(8).setMaxWidth(0);
+		
 		
 //        table.getColumnModel().removeColumn(table.getColumnModel().getColumn(6));    
 //        table.getColumnModel().removeColumn(table.getColumnModel().getColumn(6));
@@ -591,7 +604,8 @@ public class EditJudgePanel{
 //	    // Create the combo box editor
 //	    JComboBox comboBox = new JComboBox(ComboBoxTableModel.getValidStates());
 	    comboBox.setEditable(false);
-	    
+	    comboBox.setMaximumRowCount(30);
+	    comboBox.setFont(new Font("Dialog", Font.PLAIN, 15));
 //	    comboBox.setSelectedItem(null);
 	    DefaultCellEditor editor = new DefaultCellEditor(comboBox);
 	    
@@ -600,6 +614,7 @@ public class EditJudgePanel{
 //	    // Assign the editor to the second column
 	    TableColumnModel tcm = table.getColumnModel();
 	    tcm.getColumn(3).setCellEditor(editor);
+	    tcm.getColumn(3).setCellRenderer(new NgramsRenderer());
 	    
 //	    tcm.getColumn(3).setMaxWidth(60);
 	    tcm.getColumn(2).setMaxWidth(50);

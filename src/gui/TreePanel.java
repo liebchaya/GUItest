@@ -39,9 +39,9 @@ public static JPanel getTreePanel(String targetTermId, String targetTerm){
 			
 			while(line != null){
 				String[] tokens = line.split("\t");
-				String t0 = (tokens[0].contains(",")?NgramViewer.mergeNgrams(StringUtils.convertStringToSet("["+tokens[0]+"]")):tokens[0]);
+				String t0 = (tokens[0].contains(",")?NgramViewer.mergeNgrams(StringUtils.convertStringToList("["+tokens[0]+"]")):tokens[0]);
 				t0 = t0.replaceAll("\\[|\\]", "");
-				String t1 = (tokens[1].contains(",")?NgramViewer.mergeNgrams(StringUtils.convertStringToSet("["+tokens[1]+"]")):tokens[1]);
+				String t1 = (tokens[1].contains(",")?NgramViewer.mergeNgrams(StringUtils.convertStringToList("["+tokens[1]+"]")):tokens[1]);
 				t1 = t1.replaceAll("\\[|\\]", "");
 				if(treeMap.containsKey(t1))
 					treeMap.get(t1).add(t0);

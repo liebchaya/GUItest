@@ -99,7 +99,7 @@ public class DataFiles {
 		HashMap<Integer,Integer> modernConvertMap = convertHashMap(false);
 		HashMap<Integer,Integer> ancientConvertMap = convertHashMap(true);
 		// table headline
-		String[] cols = {"#", "מונח", "שיפוט", "קבוצה", "ה.קבוצה", "ה.הרחבה", "למה", "אב"};
+		String[] cols = {"#", "מונח", "שיפוט", "קבוצה", "ה.קבוצה", "ה.הרחבה", "למה", "אב", "דור"};
 		m_vCols = new Vector();
 		Vector v = new Vector();
 		for( int i = 0; i < cols.length; ++i )
@@ -110,8 +110,9 @@ public class DataFiles {
 		
 		BufferedReader reader = new BufferedReader(new FileReader(m_filesDir+"/"+targetTerm+fileSufix));
 		// skip the headline
-		reader.readLine();
 		String line = reader.readLine();
+		if (line.isEmpty()||line.startsWith("Term"))
+			line = reader.readLine();
 		System.out.println(line);
 		// fill tables data
 		int ancientCounter = 1, modernCounter = 1;
@@ -123,7 +124,6 @@ public class DataFiles {
 				Vector vec = new Vector();
 				vec.add(ancientCounter);
 				vec.add(tokens[0]);
-//				vec.add(NgramViewer.mergeNgrams(StringUtils.convertStringToSet(tokens[0])));
 				int judge = Integer.parseInt(tokens[3]);
 				if (judge != -99){
 					m_ancientPrevJudgments.add(ancientCounter-1);
@@ -146,13 +146,13 @@ public class DataFiles {
 				vec.add("הוסף");
 				vec.add(tokens[1]);
 				vec.add(tokens[5]);
+				vec.add(tokens[6]);
 				m_vAncientData.add(vec);
 				}
 			 else {
 				Vector vec = new Vector();
 				vec.add(modernCounter);
 				vec.add(tokens[0]);
-//				vec.add(NgramViewer.mergeNgrams(StringUtils.convertStringToSet(tokens[0])));
 				int judge = Integer.parseInt(tokens[3]);
 				if (judge != -99){
 					m_modernPrevJudgments.add(modernCounter-1);
@@ -175,6 +175,7 @@ public class DataFiles {
 				vec.add("הוסף");
 				vec.add(tokens[1]);
 				vec.add(tokens[5]);
+				vec.add(tokens[6]);
 				m_vModernData.add(vec);
 			}
 			line = reader.readLine();
@@ -197,7 +198,7 @@ public class DataFiles {
 		HashMap<Integer,Integer> modernConvertMap = convertHashMap(false);
 		HashMap<Integer,Integer> ancientConvertMap = convertHashMap(true);
 		// table headline
-		String[] cols = {"#", "מונח", "שיפוט", "קבוצה", "ה.קבוצה", "ה.הרחבה", "למה", "אב"};
+		String[] cols = {"#", "מונח", "שיפוט", "קבוצה", "ה.קבוצה", "ה.הרחבה", "למה", "אב","דור"};
 		m_vCols = new Vector();
 		Vector v = new Vector();
 		for( int i = 0; i < cols.length; ++i )
@@ -240,7 +241,9 @@ public class DataFiles {
 //						m_ancientGroups.add(group, tokens[0]);
 //					vec.add(m_ancientGroups.get(group));
 					if (!ancientConvertMap.containsKey(group)){
-						m_ancientGroups.add(vecPair.get(0),tokens[0]);
+						String desc = NgramViewer.mergeNgrams(StringUtils.convertStringToList(tokens[0]));
+						m_ancientGroups.add(vecPair.get(0),desc);
+//						m_ancientGroups.add(vecPair.get(0),tokens[0]);
 						m_ancientGroupsConvertMap.put(vecPair.get(0), group);
 						ancientConvertMap.put(group, vecPair.get(0));
 						vecPair.set(0,vecPair.get(0)+1);
@@ -252,6 +255,7 @@ public class DataFiles {
 				vec.add("הוסף");
 				vec.add(tokens[1]);
 				vec.add(tokens[5]);
+				vec.add(tokens[6]);
 				m_vAncientData.add(vec);
 				}
 			 else {
@@ -278,7 +282,9 @@ public class DataFiles {
 //					vec.add(m_modernGroups.get(group));
 					if (!modernConvertMap.containsKey(group)){
 						modernConvertMap.put(group, vecPair.get(1));
-						m_modernGroups.add(vecPair.get(1),tokens[0]);
+						String desc = NgramViewer.mergeNgrams(StringUtils.convertStringToList(tokens[0]));
+//						m_modernGroups.add(vecPair.get(1),tokens[0]);
+						m_modernGroups.add(vecPair.get(1),desc);
 						m_modernGroupsConvertMap.put(vecPair.get(1), group);
 						vecPair.set(1,vecPair.get(1)+1);
 					}
@@ -289,6 +295,7 @@ public class DataFiles {
 				vec.add("הוסף");
 				vec.add(tokens[1]);
 				vec.add(tokens[5]);
+				vec.add(tokens[6]);
 				m_vModernData.add(vec);
 			}
 			line = reader.readLine();
@@ -438,12 +445,16 @@ public class DataFiles {
 				if (groupId > m_maxGroupId)
 					m_maxGroupId = groupId;
 				if (oldCount > 0){
-					m_ancientGroups.add(ancientIndex,tokens[1]);
+					String desc = NgramViewer.mergeNgrams(StringUtils.convertStringToList(tokens[1]));
+					m_ancientGroups.add(ancientIndex,desc);
+//					m_ancientGroups.add(ancientIndex,tokens[1]);
 					m_ancientGroupsConvertMap.put(ancientIndex, groupId);
 					ancientIndex++;
 				}
 				else {
-					m_modernGroups.add(modernIndex,tokens[1]);
+					String desc = NgramViewer.mergeNgrams(StringUtils.convertStringToList(tokens[1]));
+					m_modernGroups.add(modernIndex,desc);
+//					m_modernGroups.add(modernIndex,tokens[1]);
 					m_modernGroupsConvertMap.put(modernIndex, groupId);
 					modernIndex++;
 				}
@@ -478,12 +489,16 @@ public class DataFiles {
 				if (groupId > m_maxGroupId)
 					m_maxGroupId = groupId;
 				if (oldCount > 0){
-					m_ancientGroups.add(ancientIndex,tokens[1]);
+					String desc = NgramViewer.mergeNgrams(StringUtils.convertStringToList(tokens[1]));
+					m_ancientGroups.add(ancientIndex,desc);
+//					m_ancientGroups.add(ancientIndex,tokens[1]);
 					m_ancientGroupsConvertMap.put(ancientIndex, groupId);
 					ancientIndex++;
 				}
 				else {
-					m_modernGroups.add(modernIndex,tokens[1]);
+					String desc = NgramViewer.mergeNgrams(StringUtils.convertStringToList(tokens[1]));
+					m_modernGroups.add(modernIndex,desc);
+//					m_modernGroups.add(modernIndex,tokens[1]);
 					m_modernGroupsConvertMap.put(modernIndex, groupId);
 					modernIndex++;
 				}

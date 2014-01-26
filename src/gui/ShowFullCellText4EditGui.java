@@ -57,7 +57,7 @@ public class ShowFullCellText4EditGui {
 		JPanel panel = new JPanel();
 		JTextArea area = new JTextArea(20,20);
 		area.setFont(new Font("Dialg", Font.PLAIN, 20));
-		content = NgramViewer.mergeNgrams(StringUtils.convertStringToSet(content));
+		content = NgramViewer.mergeNgrams(StringUtils.convertStringToList(content));
 		content = content.replaceAll(",","\n\n");
 		area.setLineWrap(true);  
 		area.setWrapStyleWord(true);  

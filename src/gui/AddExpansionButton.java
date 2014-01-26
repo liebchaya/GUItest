@@ -96,7 +96,7 @@ class AddExpansionButtonRenderer extends JButton implements TableCellRenderer {
 	    if (isPushed) {
 	      // 
 	      //
-	    	 String formatedData = NgramViewer.mergeNgrams(StringUtils.convertStringToSet(data));
+	    	 String formatedData = NgramViewer.mergeNgrams(StringUtils.convertStringToList(data));
 	    	 int selection = JOptionPane.showConfirmDialog(
                      null
              , " האם אתה בטוח שברצונך להוסיף את ההרחבה:" + formatedData + "?"

@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.plaf.FontUIResource;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -153,7 +154,7 @@ public class JudgePanel{
 						// write annotation file to a new folder
 						BufferedWriter writer = new BufferedWriter(new FileWriter(Constants.workingDir+Constants.annotatedDir+"/"+SaveBtn.getName()+Constants.judgmentFileSufix));
 						writer.write("\n");
-						int groupNum = (maxGroupId>0?maxGroupId:-1);
+						int groupNum = (maxGroupId>=0?maxGroupId:-1);
 						for(int i=0; i<ancientRowNum; i++){
 							writer.write(ancientTable.getValueAt(i, 1).toString()+"\t");
 							writer.write(ancientTable.getValueAt(i, 6).toString()+"\t");
@@ -170,7 +171,8 @@ public class JudgePanel{
 									writer.write(groupNum+"\t");
 								}
 							}
-							writer.write(ancientTable.getValueAt(i, 7).toString()+"\n");
+							writer.write(ancientTable.getValueAt(i, 7).toString()+"\t");
+							writer.write(ancientTable.getValueAt(i, 8).toString()+"\n");
 						}
 						
 						for(int i=0; i<modernRowNum; i++){
@@ -189,7 +191,8 @@ public class JudgePanel{
 									writer.write(groupNum+"\t");
 								}
 							}
-							writer.write(modernTable.getValueAt(i, 7).toString()+"\n");
+							writer.write(modernTable.getValueAt(i, 7).toString()+"\t");
+							writer.write(modernTable.getValueAt(i, 8).toString()+"\n");
 						}
 						writer.close();
 						// remove judgment file
@@ -458,6 +461,11 @@ public class JudgePanel{
 		table.getTableHeader().getColumnModel().getColumn(7).setMinWidth(0);  
 		table.getTableHeader().getColumnModel().getColumn(7).setMaxWidth(0);
 		
+		table.getColumnModel().getColumn(8).setMinWidth(0);  
+		table.getColumnModel().getColumn(8).setMaxWidth(0);  
+		table.getTableHeader().getColumnModel().getColumn(8).setMinWidth(0);  
+		table.getTableHeader().getColumnModel().getColumn(8).setMaxWidth(0);
+		
 		
 //        table.getColumnModel().removeColumn(table.getColumnModel().getColumn(6));    
 //        table.getColumnModel().removeColumn(table.getColumnModel().getColumn(6));
@@ -474,7 +482,8 @@ public class JudgePanel{
 //	    // Create the combo box editor
 //	    JComboBox comboBox = new JComboBox(ComboBoxTableModel.getValidStates());
 	    comboBox.setEditable(false);
-	    
+	    comboBox.setMaximumRowCount(30);
+	    comboBox.setFont(new Font("Dialog", Font.PLAIN, 15));
 //	    comboBox.setSelectedItem(null);
 	    DefaultCellEditor editor = new DefaultCellEditor(comboBox);
 	    
@@ -483,6 +492,7 @@ public class JudgePanel{
 //	    // Assign the editor to the second column
 	    TableColumnModel tcm = table.getColumnModel();
 	    tcm.getColumn(3).setCellEditor(editor);
+	    tcm.getColumn(3).setCellRenderer(new NgramsRenderer());
 	    
 //	    tcm.getColumn(3).setMaxWidth(60);
 	    tcm.getColumn(2).setMaxWidth(50);

@@ -103,7 +103,7 @@ public class NgramViewer {
 		return null;
 	}
 	
-	public static String mergeNgrams1(HashSet<String> ngrams){
+	public static String mergeNgrams1(LinkedList<String> ngrams){
 		int maxSize = 0;
 		for(String ngram:ngrams)
 			if(ngram.split(" ").length>maxSize)
@@ -141,7 +141,7 @@ public class NgramViewer {
 		}
 	
 	
-	public static String reMergeNgrams(HashSet<String> ngramSet){
+	public static String reMergeNgrams(LinkedList<String> ngramSet){
 		
 		Queue<String> queue = new LinkedList<String>();
 		for (String ngram:ngramSet){
@@ -167,13 +167,15 @@ public class NgramViewer {
 				queue.add(ngram);
 			
 		}
+		if (queue.size()==0)
+			return "";
 		return queue.toString();
 		}
 	
 	
-	public static String mergeNgrams(HashSet<String> ngrams)
+	public static String mergeNgrams(LinkedList<String> ngrams)
 	{
 		String merge = mergeNgrams1(ngrams);
-		return reMergeNgrams(StringUtils.convertStringToSet(merge));
+		return reMergeNgrams(StringUtils.convertStringToList(merge));
 	}
 }

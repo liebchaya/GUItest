@@ -1,13 +1,14 @@
 package code;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class StringUtils {
 	
-	public static HashSet<String> convertStringToSet(String str){
-		HashSet<String> set = new HashSet<String>();
+	public static LinkedList<String> convertStringToList(String str){
+		LinkedList<String> set = new LinkedList<String>();
 		for(String s:str.split(",")){
 			s= s.replaceAll("\\[|\\]", "");
 			if(!s.isEmpty())

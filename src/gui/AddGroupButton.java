@@ -92,7 +92,7 @@ class AddGroupButtonRenderer extends JButton implements TableCellRenderer {
 	    if (isPushed) {
 	      // 
 	      //
-	    	data = NgramViewer.mergeNgrams(StringUtils.convertStringToSet(data));
+	    	data = NgramViewer.mergeNgrams(StringUtils.convertStringToList(data));
 	    	 int selection = JOptionPane.showConfirmDialog(
                      null
              , " האם אתה בטוח שברצונך להוסיף את הקבוצה:" + data + "?"

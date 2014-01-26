@@ -19,7 +19,7 @@ NgramsRenderer(){
 public void setValue(Object value) {
     if ((value != null)) {
         String stringFormat = value.toString();
-        valueToString = NgramViewer.mergeNgrams(StringUtils.convertStringToSet(stringFormat));
+        valueToString = NgramViewer.mergeNgrams(StringUtils.convertStringToList(stringFormat));
         value = valueToString;
     }
     super.setValue(value);
