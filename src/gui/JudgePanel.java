@@ -204,24 +204,26 @@ public class JudgePanel{
 							groupsFile.delete();
 						}
 						// write the expansion file
-						writer = new BufferedWriter(new FileWriter(Constants.workingDir+Constants.inputDir+"/"+Constants.expFileName,true));
-						int rowNum = ancientExpTable.getRowCount(); 
-						for(int i=0; i<rowNum; i++){
-							String targetTerm = SaveBtn.getName();
-							writer.write(targetTerm + "\t");
-							writer.write(StringUtils.cleanString(ancientExpTable.getValueAt(i, 0).toString())+"\t");
-							writer.write(ancientExpTable.getValueAt(i, 1).toString()+"\t");
-							writer.write("1\n");
+						if (ancientExpTable.getRowCount()>0 || modernExpTable.getRowCount() > 0) {
+							writer = new BufferedWriter(new FileWriter(Constants.workingDir+Constants.inputDir+"/"+Constants.expFileName,true));
+							int rowNum = ancientExpTable.getRowCount(); 
+							for(int i=0; i<rowNum; i++){
+								String targetTerm = SaveBtn.getName();
+								writer.write(targetTerm + "\t");
+								writer.write(StringUtils.cleanString(ancientExpTable.getValueAt(i, 0).toString())+"\t");
+								writer.write(ancientExpTable.getValueAt(i, 1).toString()+"\t");
+								writer.write("1\n");
+							}
+							rowNum = modernExpTable.getRowCount();
+							for(int i=0; i<rowNum; i++){
+								String targetTerm = SaveBtn.getName();
+								writer.write(targetTerm + "\t");
+								writer.write(StringUtils.cleanString(modernExpTable.getValueAt(i, 0).toString())+"\t");
+								writer.write(modernExpTable.getValueAt(i, 1).toString()+"\t");
+								writer.write("0\n");
+							}
+							writer.close();
 						}
-						rowNum = modernExpTable.getRowCount();
-						for(int i=0; i<rowNum; i++){
-							String targetTerm = SaveBtn.getName();
-							writer.write(targetTerm + "\t");
-							writer.write(StringUtils.cleanString(modernExpTable.getValueAt(i, 0).toString())+"\t");
-							writer.write(modernExpTable.getValueAt(i, 1).toString()+"\t");
-							writer.write("0\n");
-						}
-						writer.close();
 						}
 						catch(IOException e2) {
 						System.out.println("Problem creating table file: " + e2);
