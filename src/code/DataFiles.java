@@ -28,12 +28,16 @@ public class DataFiles {
 		m_modernExpanMap = new HashMap<Integer, LinkedList<String>>();
 		
 		File file = new File(expFile);
+		if(!file.exists())
+			return;
 	    FileInputStream fis = new FileInputStream(file);
 	    byte[] data = new byte[(int)file.length()];
 	    fis.read(data);
 	    fis.close();
 	    String content = new String(data);
 	    content = StringUtils.cleanString(content);
+	    if(content.isEmpty())
+	    	return;
 	 // using pattern with flags
 		Pattern pattern = Pattern.compile("\n");
 		Matcher matcher = pattern.matcher(content);
