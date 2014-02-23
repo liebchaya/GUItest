@@ -14,6 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -277,9 +278,10 @@ private void initMenu() {
 		}
       	   if (selection != null){
       		   File input = new File(Constants.workingDir+Constants.inputDir+"/"+Constants.newInputFileName);
-      		   FileWriter out;
+      		   OutputStreamWriter out;
 			try {
-				out = new FileWriter(input);
+				FileOutputStream fileStream = new FileOutputStream(input);
+				out = new OutputStreamWriter(fileStream, "UTF-8");
 				out.write(selection + "\n");
 		      	out.close();
 			} catch (IOException e) {

@@ -76,6 +76,7 @@ public class ZipUtils {
 			  // as compression method, etc.
 			  ZipParameters parameters = new ZipParameters();
 
+			  parameters.setIncludeRootFolder(false);
 			  // set compression method to store compression
 			  parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
 
