@@ -85,8 +85,17 @@ public class JudgePanel{
 
 		m_panel = new JPanel(new BorderLayout());
 		
-		final JLabel Text = new JLabel(targetTerm,JLabel.CENTER);
-		m_panel.add(Text,  BorderLayout.NORTH);
+		JPanel captionPanel = new JPanel();
+		
+		final JLabel Text = new JLabel(targetTerm+"               ",JLabel.CENTER);
+//		m_panel.add(Text,  BorderLayout.NORTH);
+		captionPanel.add(Text,  BorderLayout.EAST);
+		captionPanel.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);		
+		m_panel.add(captionPanel,  BorderLayout.NORTH);
+
+		
+//		final JLabel Text = new JLabel(targetTerm,JLabel.CENTER);
+//		m_panel.add(Text,  BorderLayout.NORTH);
 	    
 		//Two tabs for modern and ancient annotation
 		JTabbedPane tabbedPane = new JTabbedPane();
@@ -160,7 +169,7 @@ public class JudgePanel{
 							writer.write(ancientTable.getValueAt(i, 6).toString()+"\t");
 							writer.write("1\t");
 							writer.write(((Boolean) ancientTable.getValueAt(i, 2)?1:0) +"\t");
-							int ancientComboIndex = ancientComboBoxModel.getIndexOf(ancientTable.getValueAt(i, 3).toString());
+							int ancientComboIndex = ancientComboBoxModel.getIndexOf(ancientTable.getValueAt(i, 4).toString());
 							if (ancientComboIndex == -1 || ancientComboIndex == 0)
 								writer.write("-1\t");
 							else {
@@ -172,7 +181,8 @@ public class JudgePanel{
 								}
 							}
 							writer.write(ancientTable.getValueAt(i, 7).toString()+"\t");
-							writer.write(ancientTable.getValueAt(i, 8).toString()+"\n");
+							writer.write(ancientTable.getValueAt(i, 8).toString()+"\t");
+							writer.write(ancientTable.getValueAt(i, 9).toString()+"\n");
 						}
 						
 						for(int i=0; i<modernRowNum; i++){
@@ -180,7 +190,7 @@ public class JudgePanel{
 							writer.write(modernTable.getValueAt(i, 6).toString()+"\t");
 							writer.write("0\t");
 							writer.write(((Boolean) modernTable.getValueAt(i, 2)?1:0) +"\t");
-							int modernComboIndex = modernComboBoxModel.getIndexOf(modernTable.getValueAt(i, 3).toString());
+							int modernComboIndex = modernComboBoxModel.getIndexOf(modernTable.getValueAt(i, 4).toString());
 							if (modernComboIndex == -1 || modernComboIndex == 0)
 								writer.write("-1\t");
 							else {
@@ -192,7 +202,8 @@ public class JudgePanel{
 								}
 							}
 							writer.write(modernTable.getValueAt(i, 7).toString()+"\t");
-							writer.write(modernTable.getValueAt(i, 8).toString()+"\n");
+							writer.write(modernTable.getValueAt(i, 8).toString()+"\t");
+							writer.write(modernTable.getValueAt(i, 9).toString()+"\n");
 						}
 						writer.close();
 						// remove judgment file
@@ -212,7 +223,7 @@ public class JudgePanel{
 								writer.write(targetTerm + "\t");
 								writer.write(StringUtils.cleanString(ancientExpTable.getValueAt(i, 0).toString())+"\t");
 								writer.write(ancientExpTable.getValueAt(i, 1).toString()+"\t");
-								writer.write("1\n");
+								writer.write("1\t0\n");
 							}
 							rowNum = modernExpTable.getRowCount();
 							for(int i=0; i<rowNum; i++){
@@ -220,7 +231,7 @@ public class JudgePanel{
 								writer.write(targetTerm + "\t");
 								writer.write(StringUtils.cleanString(modernExpTable.getValueAt(i, 0).toString())+"\t");
 								writer.write(modernExpTable.getValueAt(i, 1).toString()+"\t");
-								writer.write("0\n");
+								writer.write("0\t0\n");
 							}
 							writer.close();
 						}
@@ -300,6 +311,11 @@ public class JudgePanel{
                     c.setBackground(getBackground());
                 return c;
             }};
+            
+            modernExpTable.getColumnModel().getColumn(1).setMinWidth(0);  
+            modernExpTable.getColumnModel().getColumn(1).setMaxWidth(0);  
+            modernExpTable.getTableHeader().getColumnModel().getColumn(1).setMinWidth(0);  
+            modernExpTable.getTableHeader().getColumnModel().getColumn(1).setMaxWidth(0);
             
             modernExpTable.addMouseListener(new MouseAdapter() {
 	        	@Override
@@ -468,6 +484,11 @@ public class JudgePanel{
 		table.getTableHeader().getColumnModel().getColumn(8).setMinWidth(0);  
 		table.getTableHeader().getColumnModel().getColumn(8).setMaxWidth(0);
 		
+		table.getColumnModel().getColumn(9).setMinWidth(0);  
+		table.getColumnModel().getColumn(9).setMaxWidth(0);  
+		table.getTableHeader().getColumnModel().getColumn(9).setMinWidth(0);  
+		table.getTableHeader().getColumnModel().getColumn(9).setMaxWidth(0);
+		
 		
 //        table.getColumnModel().removeColumn(table.getColumnModel().getColumn(6));    
 //        table.getColumnModel().removeColumn(table.getColumnModel().getColumn(6));
@@ -475,7 +496,7 @@ public class JudgePanel{
 		DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
 		rightRenderer.setHorizontalAlignment( JLabel.RIGHT );
 		table.getColumnModel().getColumn(1).setCellRenderer(rightRenderer);
-		table.getColumnModel().getColumn(3).setCellRenderer(rightRenderer);
+		table.getColumnModel().getColumn(4).setCellRenderer(rightRenderer);
 		
 	    
 	    JComboBox comboBox = new JComboBox(model);
@@ -493,12 +514,12 @@ public class JudgePanel{
 //
 //	    // Assign the editor to the second column
 	    TableColumnModel tcm = table.getColumnModel();
-	    tcm.getColumn(3).setCellEditor(editor);
-	    tcm.getColumn(3).setCellRenderer(new NgramsRenderer());
+	    tcm.getColumn(4).setCellEditor(editor);
+	    tcm.getColumn(4).setCellRenderer(new NgramsRenderer());
 	    
-//	    tcm.getColumn(3).setMaxWidth(60);
+//	    tcm.getColumn(4).setMaxWidth(60);
 	    tcm.getColumn(2).setMaxWidth(50);
-	    tcm.getColumn(4).setMaxWidth(75);
+	    tcm.getColumn(3).setMaxWidth(75);
 	    tcm.getColumn(5).setMaxWidth(75);
 	    
 //	    
@@ -551,7 +572,7 @@ public class JudgePanel{
 		if (isAncient) {
 			for(int i=0; i<rowNum; i++){
 				boolean judge = (Boolean) ancientTable.getValueAt(i, 2);
-				int ancientComboIndex = ancientComboBoxModel.getIndexOf(ancientTable.getValueAt(i, 3).toString());
+				int ancientComboIndex = ancientComboBoxModel.getIndexOf(ancientTable.getValueAt(i, 4).toString());
 				if (judge && (ancientComboIndex == -1 || ancientComboIndex == 0)){
 					return i+1;
 				}
@@ -560,7 +581,7 @@ public class JudgePanel{
 		else {
 			for(int i=0; i<rowNum; i++){
 				boolean judge = (Boolean) modernTable.getValueAt(i, 2);
-				int modernComboIndex = modernComboBoxModel.getIndexOf(modernTable.getValueAt(i, 3).toString());
+				int modernComboIndex = modernComboBoxModel.getIndexOf(modernTable.getValueAt(i, 4).toString());
 				if (judge && (modernComboIndex == -1 || modernComboIndex == 0)){
 					return i+1;
 				}
@@ -575,7 +596,7 @@ private static int validateTableData2(int rowNum, boolean isAncient){
 	if (isAncient) {
 		for(int i=0; i<rowNum; i++){
 			boolean judge = (Boolean) ancientTable.getValueAt(i, 2);
-			int ancientComboIndex = ancientComboBoxModel.getIndexOf(ancientTable.getValueAt(i, 3).toString());
+			int ancientComboIndex = ancientComboBoxModel.getIndexOf(ancientTable.getValueAt(i, 4).toString());
 			if (!judge && ancientComboIndex > 0){
 				return i+1;
 			}
@@ -584,7 +605,7 @@ private static int validateTableData2(int rowNum, boolean isAncient){
 	else {
 		for(int i=0; i<rowNum; i++){
 			boolean judge = (Boolean) modernTable.getValueAt(i, 2);
-			int modernComboIndex = modernComboBoxModel.getIndexOf(modernTable.getValueAt(i, 3).toString());
+			int modernComboIndex = modernComboBoxModel.getIndexOf(modernTable.getValueAt(i, 4).toString());
 			if (!judge && modernComboIndex > 0){
 				return i+1;
 			}

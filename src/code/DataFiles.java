@@ -52,18 +52,18 @@ public class DataFiles {
 			String[] tokens = line.split("\t");
 			if(Integer.parseInt(tokens[3])==1){
 				if (m_ancientExpanMap.containsKey(Integer.parseInt(tokens[0])))
-					m_ancientExpanMap.get(Integer.parseInt(tokens[0])).add(tokens[1]+"\t"+tokens[2]);
+					m_ancientExpanMap.get(Integer.parseInt(tokens[0])).add(tokens[1]+"\t"+tokens[2]+"\t"+tokens[4]);
 				else{
 					LinkedList<String> lst = new LinkedList<String>(); 
-					lst.add(tokens[1]+"\t"+tokens[2]);
+					lst.add(tokens[1]+"\t"+tokens[2]+"\t"+tokens[4]);
 					m_ancientExpanMap.put(Integer.parseInt(tokens[0]),lst);
 				}
 			} else {
 				if (m_modernExpanMap.containsKey(Integer.parseInt(tokens[0])))
-					m_modernExpanMap.get(Integer.parseInt(tokens[0])).add(tokens[1]+"\t"+tokens[2]);
+					m_modernExpanMap.get(Integer.parseInt(tokens[0])).add(tokens[1]+"\t"+tokens[2]+"\t"+tokens[4]);
 				else{
 					LinkedList<String> lst = new LinkedList<String>(); 
-					lst.add(tokens[1]+"\t"+tokens[2]);
+					lst.add(tokens[1]+"\t"+tokens[2]+"\t"+tokens[4]);
 					m_modernExpanMap.put(Integer.parseInt(tokens[0]),lst);
 				}
 			}
@@ -73,18 +73,18 @@ public class DataFiles {
 		String[] tokens = content.substring(startPos).split("\t");
 		if(Integer.parseInt(tokens[3])==1){
 			if (m_ancientExpanMap.containsKey(Integer.parseInt(tokens[0])))
-				m_ancientExpanMap.get(Integer.parseInt(tokens[0])).add(tokens[1]+"\t"+tokens[2]);
+				m_ancientExpanMap.get(Integer.parseInt(tokens[0])).add(tokens[1]+"\t"+tokens[2]+"\t"+tokens[4]);
 			else{
 				LinkedList<String> lst = new LinkedList<String>(); 
-				lst.add(tokens[1]+"\t"+tokens[2]);
+				lst.add(tokens[1]+"\t"+tokens[2]+"\t"+tokens[4]);
 				m_ancientExpanMap.put(Integer.parseInt(tokens[0]),lst);
 			}
 		} else {
 			if (m_modernExpanMap.containsKey(Integer.parseInt(tokens[0])))
-				m_modernExpanMap.get(Integer.parseInt(tokens[0])).add(tokens[1]+"\t"+tokens[2]);
+				m_modernExpanMap.get(Integer.parseInt(tokens[0])).add(tokens[1]+"\t"+tokens[2]+"\t"+tokens[4]);
 			else{
 				LinkedList<String> lst = new LinkedList<String>(); 
-				lst.add(tokens[1]+"\t"+tokens[2]);
+				lst.add(tokens[1]+"\t"+tokens[2]+"\t"+tokens[4]);
 				m_modernExpanMap.put(Integer.parseInt(tokens[0]),lst);
 			}
 		}
@@ -103,7 +103,7 @@ public class DataFiles {
 		HashMap<Integer,Integer> modernConvertMap = convertHashMap(false);
 		HashMap<Integer,Integer> ancientConvertMap = convertHashMap(true);
 		// table headline
-		String[] cols = {"#", "מונח", "שיפוט", "קבוצה", "ה.קבוצה", "ה.הרחבה", "למה", "אב", "דור"};
+		String[] cols = {"#", "מונח", "שיפוט", "ה.קבוצה", "קבוצה", "ה.הרחבה", "למה", "אב", "דור", "ידני"};
 		m_vCols = new Vector();
 		Vector v = new Vector();
 		for( int i = 0; i < cols.length; ++i )
@@ -137,6 +137,7 @@ public class DataFiles {
 						vec.add(Boolean.FALSE);
 				} else
 					vec.add(Boolean.FALSE);
+				vec.add("הוסף");
 				ancientCounter ++;
 				int group = Integer.parseInt(tokens[4]);
 				if (group > -1){
@@ -147,10 +148,10 @@ public class DataFiles {
 				} else
 					vec.add("");
 				vec.add("הוסף");
-				vec.add("הוסף");
 				vec.add(tokens[1]);
 				vec.add(tokens[5]);
 				vec.add(tokens[6]);
+				vec.add(tokens[7]);
 				m_vAncientData.add(vec);
 				}
 			 else {
@@ -166,6 +167,7 @@ public class DataFiles {
 						vec.add(Boolean.FALSE);
 				} else
 					vec.add(Boolean.FALSE);
+				vec.add("הוסף");
 				modernCounter ++;
 				int group = Integer.parseInt(tokens[4]);
 				if (group > -1){
@@ -176,10 +178,10 @@ public class DataFiles {
 				} else
 					vec.add("");
 				vec.add("הוסף");
-				vec.add("הוסף");
 				vec.add(tokens[1]);
 				vec.add(tokens[5]);
 				vec.add(tokens[6]);
+				vec.add(tokens[7]);
 				m_vModernData.add(vec);
 			}
 			line = reader.readLine();
@@ -202,7 +204,7 @@ public class DataFiles {
 		HashMap<Integer,Integer> modernConvertMap = convertHashMap(false);
 		HashMap<Integer,Integer> ancientConvertMap = convertHashMap(true);
 		// table headline
-		String[] cols = {"#", "מונח", "שיפוט", "קבוצה", "ה.קבוצה", "ה.הרחבה", "למה", "אב","דור"};
+		String[] cols = {"#", "מונח", "שיפוט", "ה.קבוצה", "קבוצה", "ה.הרחבה", "למה", "אב","דור","ידני"};
 		m_vCols = new Vector();
 		Vector v = new Vector();
 		for( int i = 0; i < cols.length; ++i )
@@ -236,6 +238,7 @@ public class DataFiles {
 						vec.add(Boolean.FALSE);
 				} else
 					vec.add(Boolean.FALSE);
+				vec.add("הוסף");
 				ancientCounter ++;
 				int group = Integer.parseInt(tokens[4]);
 				if (group > -1){
@@ -256,10 +259,10 @@ public class DataFiles {
 				} else
 					vec.add("");
 				vec.add("הוסף");
-				vec.add("הוסף");
 				vec.add(tokens[1]);
 				vec.add(tokens[5]);
 				vec.add(tokens[6]);
+				vec.add(tokens[7]);
 				m_vAncientData.add(vec);
 				}
 			 else {
@@ -276,6 +279,7 @@ public class DataFiles {
 						vec.add(Boolean.FALSE);
 				} else
 					vec.add(Boolean.FALSE);
+				vec.add("הוסף");
 				modernCounter ++;
 				int group = Integer.parseInt(tokens[4]);
 				if (group > -1){
@@ -296,10 +300,10 @@ public class DataFiles {
 				} else
 					vec.add("");
 				vec.add("הוסף");
-				vec.add("הוסף");
 				vec.add(tokens[1]);
 				vec.add(tokens[5]);
 				vec.add(tokens[6]);
+				vec.add(tokens[7]);
 				m_vModernData.add(vec);
 			}
 			line = reader.readLine();

@@ -1,7 +1,12 @@
 package gui;
 
+import java.awt.BorderLayout;
 import java.awt.ComponentOrientation;
+import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.ScrollPane;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,12 +18,18 @@ import java.util.HashSet;
 import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
+
+import code.ZipFilter;
 
 public class AddTargetTermGui {
 
@@ -34,7 +45,7 @@ public class AddTargetTermGui {
 	 * @return target term
 	 */
 	public String getTargetTermByDirFiles(String folder, String fileSufix){
-		JPanel panel = new JPanel(new GridLayout(5, 5));
+		JPanel panel = new JPanel(new GridLayout(5, 3));
 		JTextField text0 = new JTextField(10);  
 		JLabel label = new JLabel("רשימת מונחים:                                                ");
 		JLabel label2 = new JLabel("הכנס מונח חדש:                                              ");
@@ -58,10 +69,13 @@ public class AddTargetTermGui {
         ((JComponent)comboBox.getRenderer()).setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 	    // create the combo box editor
 	    comboBox.setEditable(false);
-	  
+	    
+  
+   	 	JTextField text1 = new JTextField(10);  
 	    panel.add(comboBox);
 	    panel.add(label2); 
 	    panel.add(text0); 
+	   
 	    
 	    int result = JOptionPane.showConfirmDialog(null, panel, "הוספת מונח חדש", JOptionPane.OK_CANCEL_OPTION);  
 	    if (result == JOptionPane.OK_OPTION) {
@@ -84,12 +98,13 @@ public class AddTargetTermGui {
 	 * @throws IOException 
 	 */
 	public String getTargetTerm(String termsFile, String folder, String fileSufix) throws IOException{
-		JPanel panel = new JPanel(new GridLayout(5, 5));
-		JTextField text0 = new JTextField(10);  
-		JLabel label = new JLabel("רשימת מונחים:                                                ");
-		JLabel label2 = new JLabel("הכנס מונח חדש:                                              ");
-		label.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-		panel.add(label);  
+		JPanel panel = new JPanel(new GridLayout(5, 2));
+		JTextField text0 = new JTextField(30);  
+		JLabel label = new JLabel("רשימת מונחים:                     ");
+		JLabel label2 = new JLabel("הכנס מונח חדש:                    ");
+//		label.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+		
+		
 
 		Vector<String> comboBoxItems = new Vector<String>();
 		
@@ -129,20 +144,52 @@ public class AddTargetTermGui {
 //	    create the combo box editor
 	    comboBox.setEditable(false);
 	    
-	    panel.add(comboBox);
-	    panel.add(label2); 
-	    panel.add(text0); 
+	    final JButton btn = new JButton("בחר קובץ");
+	    btn.setToolTipText("קובץ בפורמט UTF-8");
+   	 	btn.setPreferredSize(new Dimension(50, 20));
+   	 	btn.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				 final JFileChooser fc = new JFileChooser();
+	        	 int returnVal = fc.showDialog(null,"פתיחה");
+	             if (returnVal == JFileChooser.APPROVE_OPTION) {
+	                 File file = fc.getSelectedFile();
+	                 text1.setText(file.getAbsolutePath());
+	             }
+			}
+   	 	});
+   	   
+   	 	panel.add(comboBox);
+   	 	panel.add(label);
+   	 	panel.add(text0);
+		panel.add(label2);
+		
+	    text1 = new JTextField(30);    
+	    panel.add(text1);
+	    panel.add(btn);
+	    
+//	    panel.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);   
+	    
 	    
 	    int result = JOptionPane.showConfirmDialog(null, panel, "הוספת מונח חדש", JOptionPane.OK_CANCEL_OPTION);  
 	    if (result == JOptionPane.OK_OPTION) {
 	    	String selection = text0.getText();
-	    	if(selection.trim().isEmpty()){
+	    	String fileSelection = text1.getText();
+	    	if(selection.trim().isEmpty()&&fileSelection.trim().isEmpty()){
 	    		JOptionPane.showMessageDialog(null, "לא הוכנס ערך חדש", "הכנסת נתונים שגויה", 0);
 	    		selection = null;
+	    	}
+	    	else if(!fileSelection.trim().isEmpty()){
+	    		File f = new File(fileSelection);
+	    		if (!f.exists()){
+	    			JOptionPane.showMessageDialog(null, "הקובץ הנבחר שגוי", "הכנסת נתונים שגויה", 0);
+		    		selection = null;
+	    		} else
+	    			selection = fileSelection;
 	    	}
 	      return selection;  
 	    }
 		return null; 
 	}
 
+	 private JTextField text1;
 }

@@ -124,8 +124,47 @@ public class EditJudgePanel{
 
 		m_panel = new JPanel(new BorderLayout());
 		
-		final JLabel Text = new JLabel(targetTerm,JLabel.CENTER);
-		m_panel.add(Text,  BorderLayout.NORTH);
+		JPanel captionPanel = new JPanel();
+		
+		final JLabel Text = new JLabel(targetTerm+"               ",JLabel.CENTER);
+//		m_panel.add(Text,  BorderLayout.NORTH);
+		captionPanel.add(Text,  BorderLayout.EAST);
+		captionPanel.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+		
+		final JButton AddBtn = new JButton("הוספת ערכים ידנית");
+		AddBtn.setName(targetTermId);
+		AddBtn.setPreferredSize(new Dimension(200, 20));
+		AddBtn.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				AddRelatedTermGui addGui = new AddRelatedTermGui();
+				try {
+					int generation = 0;
+					if(modernTable.getRowCount()>0)
+						generation = Integer.parseInt(modernTable.getValueAt(0, 8).toString());
+					else if (ancientTable.getRowCount()>0)
+						generation = Integer.parseInt(ancientTable.getValueAt(0, 8).toString());
+					
+					int counter = addGui.getRelatedTerm(Integer.parseInt(AddBtn.getName()),maxGroupId,generation);
+					maxGroupId += counter;
+					m_panel.removeAll();
+					m_panel.add(new JPanel());
+					FrmChange.getFrames()[0].validate();
+				} catch (NumberFormatException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+
+			});
+
+//		AddBtn.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+		captionPanel.add(AddBtn,  BorderLayout.WEST);
+		
+		m_panel.add(captionPanel,  BorderLayout.NORTH);
+		
 	    
 		//Two tabs for modern and ancient annotation
 		JTabbedPane tabbedPane = new JTabbedPane();
@@ -200,7 +239,7 @@ public class EditJudgePanel{
 							writer.write(ancientTable.getValueAt(i, 6).toString()+"\t");
 							writer.write("1\t");
 							writer.write(((Boolean) ancientTable.getValueAt(i, 2)?1:0) +"\t");
-							int ancientComboIndex = ancientComboBoxModel.getIndexOf(ancientTable.getValueAt(i, 3).toString());
+							int ancientComboIndex = ancientComboBoxModel.getIndexOf(ancientTable.getValueAt(i, 4).toString());
 							if (ancientComboIndex == -1 || ancientComboIndex == 0)
 								writer.write("-1\t");
 							else {
@@ -209,10 +248,12 @@ public class EditJudgePanel{
 								else {
 									groupNum++;
 									writer.write(groupNum+"\t");
+									maxGroupId++;
 								}
 							}
 							writer.write(ancientTable.getValueAt(i, 7).toString()+"\t");
-							writer.write(ancientTable.getValueAt(i, 8).toString()+"\n");
+							writer.write(ancientTable.getValueAt(i, 8).toString()+"\t");
+							writer.write(ancientTable.getValueAt(i, 9).toString()+"\n");
 						}
 						
 						for(int i=0; i<modernRowNum; i++){
@@ -220,7 +261,7 @@ public class EditJudgePanel{
 							writer.write(modernTable.getValueAt(i, 6).toString()+"\t");
 							writer.write("0\t");
 							writer.write(((Boolean) modernTable.getValueAt(i, 2)?1:0) +"\t");
-							int modernComboIndex = modernComboBoxModel.getIndexOf(modernTable.getValueAt(i, 3).toString());
+							int modernComboIndex = modernComboBoxModel.getIndexOf(modernTable.getValueAt(i, 4).toString());
 							if (modernComboIndex == -1 || modernComboIndex == 0)
 								writer.write("-1\t");
 							else {
@@ -229,10 +270,12 @@ public class EditJudgePanel{
 								else {
 									groupNum++;
 									writer.write(groupNum+"\t");
+									maxGroupId++;
 								}
 							}
 							writer.write(modernTable.getValueAt(i, 7).toString()+"\t");
-							writer.write(modernTable.getValueAt(i, 8).toString()+"\n");
+							writer.write(modernTable.getValueAt(i, 8).toString()+"\t");
+							writer.write(modernTable.getValueAt(i, 9).toString()+"\n");
 						}
 						writer.close();
 						// remove judgment file
@@ -261,7 +304,8 @@ public class EditJudgePanel{
 										writer.write(targetTerm + "\t");
 										writer.write(StringUtils.cleanString(ancientExpTable.getValueAt(i, 0).toString())+"\t");
 										writer.write(ancientExpTable.getValueAt(i, 1).toString()+"\t");
-										writer.write("1\n");
+										writer.write("1\t");
+										writer.write(ancientExpTable.getValueAt(i, 2).toString()+"\n");
 									}
 									rowNum = modernExpTable.getRowCount();
 									for(int i=0; i<rowNum; i++){
@@ -269,7 +313,8 @@ public class EditJudgePanel{
 										writer.write(targetTerm + "\t");
 										writer.write(StringUtils.cleanString(modernExpTable.getValueAt(i, 0).toString())+"\t");
 										writer.write(modernExpTable.getValueAt(i, 1).toString()+"\t");
-										writer.write("0\n");
+										writer.write("0\t");
+										writer.write(modernExpTable.getValueAt(i, 2).toString()+"\n");
 									}
 					    		}
 					    	}
@@ -277,15 +322,19 @@ public class EditJudgePanel{
 					    		if(m_ancientExpanMap.containsKey(id)){
 					    			for(String exp:m_ancientExpanMap.get(id)){
 						    			writer.write(id + "\t");
-										writer.write(exp+"\t");
-										writer.write("1\n");
+										writer.write(exp.split("\t")[0]+"\t");
+										writer.write(exp.split("\t")[1]+"\t");
+										writer.write("1\t");
+										writer.write(exp.split("\t")[3]+"\n");
 					    			}
 					    		}
 					    		if(m_modernExpanMap.containsKey(id)){
 					    			for(String exp:m_modernExpanMap.get(id)){
 						    			writer.write(id + "\t");
-										writer.write(exp+"\t");
-										writer.write("0\n");
+						    			writer.write(exp.split("\t")[0]+"\t");
+										writer.write(exp.split("\t")[1]+"\t");
+										writer.write("0\t");
+										writer.write(exp.split("\t")[3]+"\n");
 					    			}
 					    		}
 					    	}
@@ -297,7 +346,8 @@ public class EditJudgePanel{
 								writer.write(targetTerm + "\t");
 								writer.write(StringUtils.cleanString(ancientExpTable.getValueAt(i, 0).toString())+"\t");
 								writer.write(ancientExpTable.getValueAt(i, 1).toString()+"\t");
-								writer.write("1\n");
+								writer.write("1\t");
+								writer.write(ancientExpTable.getValueAt(i, 2).toString()+"\n");
 							}
 							rowNum = modernExpTable.getRowCount();
 							for(int i=0; i<rowNum; i++){
@@ -305,7 +355,8 @@ public class EditJudgePanel{
 								writer.write(targetTerm + "\t");
 								writer.write(StringUtils.cleanString(modernExpTable.getValueAt(i, 0).toString())+"\t");
 								writer.write(modernExpTable.getValueAt(i, 1).toString()+"\t");
-								writer.write("0\n");
+								writer.write("0\t");
+								writer.write(modernExpTable.getValueAt(i, 2).toString()+"\n");
 							}
 					    }
 						writer.close();
@@ -350,6 +401,7 @@ public class EditJudgePanel{
 		Vector dummyHeader = new Vector();
 	    dummyHeader.addElement("");
 	    dummyHeader.addElement("");
+	    dummyHeader.addElement("");
 	   
 	    
 	    int targetId = Integer.parseInt(targetTermId);
@@ -359,6 +411,7 @@ public class EditJudgePanel{
 	    		Vector vec = new Vector();
 	    		vec.addElement(tokens[0]);
 	    		vec.addElement(tokens[1]);
+	    		vec.addElement(tokens[2]);
 	    		ancientDataVec.add(vec);
 	    	}
 	    }
@@ -376,6 +429,11 @@ public class EditJudgePanel{
 	            ancientExpTable.getColumnModel().getColumn(1).setMaxWidth(0);  
 	    		ancientExpTable.getTableHeader().getColumnModel().getColumn(1).setMinWidth(0);  
 	    		ancientExpTable.getTableHeader().getColumnModel().getColumn(1).setMaxWidth(0);
+	    		
+	    		ancientExpTable.getColumnModel().getColumn(2).setMinWidth(0);  
+	            ancientExpTable.getColumnModel().getColumn(2).setMaxWidth(0);  
+	    		ancientExpTable.getTableHeader().getColumnModel().getColumn(2).setMinWidth(0);  
+	    		ancientExpTable.getTableHeader().getColumnModel().getColumn(2).setMaxWidth(0);
 	    		
 	    		ancientExpTable.addMouseListener(new MouseAdapter() {
 	    	        	@Override
@@ -399,6 +457,7 @@ public class EditJudgePanel{
 	    		Vector vec = new Vector();
 	    		vec.addElement(tokens[0]);
 	    		vec.addElement(tokens[1]);
+	    		vec.addElement(tokens[2]);
 	    		modernDataVec.add(vec);
 	    	}
 	    }
@@ -413,6 +472,15 @@ public class EditJudgePanel{
                 return c;
             }};
             
+            modernExpTable.getColumnModel().getColumn(1).setMinWidth(0);  
+            modernExpTable.getColumnModel().getColumn(1).setMaxWidth(0);  
+            modernExpTable.getTableHeader().getColumnModel().getColumn(1).setMinWidth(0);  
+            modernExpTable.getTableHeader().getColumnModel().getColumn(1).setMaxWidth(0);
+    		
+            modernExpTable.getColumnModel().getColumn(2).setMinWidth(0);  
+            modernExpTable.getColumnModel().getColumn(2).setMaxWidth(0);  
+            modernExpTable.getTableHeader().getColumnModel().getColumn(2).setMinWidth(0);  
+            modernExpTable.getTableHeader().getColumnModel().getColumn(2).setMaxWidth(0);
             modernExpTable.addMouseListener(new MouseAdapter() {
 	        	@Override
 	            public void mouseReleased(MouseEvent e) {
@@ -589,6 +657,11 @@ public class EditJudgePanel{
 		table.getColumnModel().getColumn(8).setMaxWidth(0);  
 		table.getTableHeader().getColumnModel().getColumn(8).setMinWidth(0);  
 		table.getTableHeader().getColumnModel().getColumn(8).setMaxWidth(0);
+
+		table.getColumnModel().getColumn(9).setMinWidth(0);  
+		table.getColumnModel().getColumn(9).setMaxWidth(0);  
+		table.getTableHeader().getColumnModel().getColumn(9).setMinWidth(0);  
+		table.getTableHeader().getColumnModel().getColumn(9).setMaxWidth(0);
 		
 		
 //        table.getColumnModel().removeColumn(table.getColumnModel().getColumn(6));    
@@ -597,7 +670,7 @@ public class EditJudgePanel{
 		DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
 		rightRenderer.setHorizontalAlignment( JLabel.RIGHT );
 		table.getColumnModel().getColumn(1).setCellRenderer(rightRenderer);
-		table.getColumnModel().getColumn(3).setCellRenderer(rightRenderer);
+		table.getColumnModel().getColumn(4).setCellRenderer(rightRenderer);
 		
 	    
 	    JComboBox comboBox = new JComboBox(model);
@@ -615,12 +688,12 @@ public class EditJudgePanel{
 //
 //	    // Assign the editor to the second column
 	    TableColumnModel tcm = table.getColumnModel();
-	    tcm.getColumn(3).setCellEditor(editor);
-	    tcm.getColumn(3).setCellRenderer(new NgramsRenderer());
+	    tcm.getColumn(4).setCellEditor(editor);
+	    tcm.getColumn(4).setCellRenderer(new NgramsRenderer());
 	    
-//	    tcm.getColumn(3).setMaxWidth(60);
+//	    tcm.getColumn(4).setMaxWidth(60);
 	    tcm.getColumn(2).setMaxWidth(50);
-	    tcm.getColumn(4).setMaxWidth(75);
+	    tcm.getColumn(3).setMaxWidth(75);
 	    tcm.getColumn(5).setMaxWidth(75);
 	    
 //	    
@@ -673,7 +746,7 @@ public class EditJudgePanel{
 		if (isAncient) {
 			for(int i=0; i<rowNum; i++){
 				boolean judge = (Boolean) ancientTable.getValueAt(i, 2);
-				int ancientComboIndex = ancientComboBoxModel.getIndexOf(ancientTable.getValueAt(i, 3).toString());
+				int ancientComboIndex = ancientComboBoxModel.getIndexOf(ancientTable.getValueAt(i, 4).toString());
 				if (judge && (ancientComboIndex == -1 || ancientComboIndex == 0)){
 					return i+1;
 				}
@@ -682,7 +755,7 @@ public class EditJudgePanel{
 		else {
 			for(int i=0; i<rowNum; i++){
 				boolean judge = (Boolean) modernTable.getValueAt(i, 2);
-				int modernComboIndex = modernComboBoxModel.getIndexOf(modernTable.getValueAt(i, 3).toString());
+				int modernComboIndex = modernComboBoxModel.getIndexOf(modernTable.getValueAt(i, 4).toString());
 				if (judge && (modernComboIndex == -1 || modernComboIndex == 0)){
 					return i+1;
 				}
@@ -697,7 +770,7 @@ private static int validateTableData2(int rowNum, boolean isAncient){
 	if (isAncient) {
 		for(int i=0; i<rowNum; i++){
 			boolean judge = (Boolean) ancientTable.getValueAt(i, 2);
-			int ancientComboIndex = ancientComboBoxModel.getIndexOf(ancientTable.getValueAt(i, 3).toString());
+			int ancientComboIndex = ancientComboBoxModel.getIndexOf(ancientTable.getValueAt(i, 4).toString());
 			if (!judge && ancientComboIndex > 0){
 				return i+1;
 			}
@@ -706,7 +779,7 @@ private static int validateTableData2(int rowNum, boolean isAncient){
 	else {
 		for(int i=0; i<rowNum; i++){
 			boolean judge = (Boolean) modernTable.getValueAt(i, 2);
-			int modernComboIndex = modernComboBoxModel.getIndexOf(modernTable.getValueAt(i, 3).toString());
+			int modernComboIndex = modernComboBoxModel.getIndexOf(modernTable.getValueAt(i, 4).toString());
 			if (!judge && modernComboIndex > 0){
 				return i+1;
 			}

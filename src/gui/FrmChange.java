@@ -59,6 +59,7 @@ public FrmChange(){
 	UIManager.put("MenuItem.font", font);
 	UIManager.put("TabbedPane.font", font);
 	UIManager.put("Tree.font", font);
+	UIManager.put("CheckBox.font", font);
 	
 	
 	
@@ -262,6 +263,8 @@ private void initMenu() {
          }
      }
      );
+     
+     
      targetMenu.add(targetItem1);
      JMenuItem targetItem2 = new JMenuItem("הוסף מונח חדש");
      targetItem2.addActionListener(new ActionListener(){
@@ -277,17 +280,30 @@ private void initMenu() {
 			e1.printStackTrace();
 		}
       	   if (selection != null){
-      		   File input = new File(Constants.workingDir+Constants.inputDir+"/"+Constants.newInputFileName);
-      		   OutputStreamWriter out;
-			try {
-				FileOutputStream fileStream = new FileOutputStream(input);
-				out = new OutputStreamWriter(fileStream, "UTF-8");
-				out.write(selection + "\n");
-		      	out.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}   
+      		   File selFile = new File(selection);
+      		   if (!selFile.exists()) {
+	      		   File input = new File(Constants.workingDir+Constants.inputDir+"/"+Constants.newInputFileName);
+	      		   OutputStreamWriter out;
+	      		   try {
+	      			   FileOutputStream fileStream = new FileOutputStream(input);
+	      			   out = new OutputStreamWriter(fileStream, "UTF-8");
+	      			   out.write(selection + "\n");
+	      			   out.close();
+	      		   } catch (IOException e) {
+					// TODO Auto-generated catch block
+	      			   e.printStackTrace();
+	      		   }  
+      		   } else{
+      			 try {
+      				File input = new File(Constants.workingDir+Constants.inputDir);
+      				if (!input.exists())
+      					input.mkdir();
+					FileUtils.copyFileUsingFileStreams(selFile,new File(Constants.workingDir+Constants.inputDir+"/"+Constants.newInputFileName));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+      		   }
       	   }
       	   
          }
