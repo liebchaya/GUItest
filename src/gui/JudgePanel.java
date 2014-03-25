@@ -177,6 +177,7 @@ public class JudgePanel{
 									writer.write(ancientGroupsConvertMap.get(ancientComboIndex)+"\t");
 								else {
 									groupNum++;
+									ancientGroupsConvertMap.put(ancientComboIndex, groupNum);
 									writer.write(groupNum+"\t");
 								}
 							}
@@ -198,6 +199,7 @@ public class JudgePanel{
 									writer.write(modernGroupsConvertMap.get(modernComboIndex)+"\t");
 								else {
 									groupNum++;
+									modernGroupsConvertMap.put(modernComboIndex, groupNum);
 									writer.write(groupNum+"\t");
 								}
 							}

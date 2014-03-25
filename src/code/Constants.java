@@ -1,9 +1,9 @@
 package code;
 
 public class Constants {
-//	public static final String workingDir = System.getenv("USERPROFILE")+"/QEsys";//"C:/QEsys"; ///Surface_Surface"; //clusters50_SUMSCORE_2";
+	public static final String workingDir = System.getenv("USERPROFILE")+"/QEsys";//"C:/QEsys"; ///Surface_Surface"; //clusters50_SUMSCORE_2";
 //	public static final String workingDir = "C:/QEsys"; ///Surface_Surface"; //clusters50_SUMSCORE_2";
-	public static final String workingDir = "C:/TestQeSys";
+//	public static final String workingDir = "C:/TestQeSys";
 	public static final String annotatedDir = "/annotated";
 	public static final String thesaurusDir = "/thesaurus";
 	public static final String judgmentsDir = "/judgments";

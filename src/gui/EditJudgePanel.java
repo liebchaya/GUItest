@@ -247,6 +247,7 @@ public class EditJudgePanel{
 									writer.write(ancientGroupsConvertMap.get(ancientComboIndex)+"\t");
 								else {
 									groupNum++;
+									ancientGroupsConvertMap.put(ancientComboIndex, groupNum);
 									writer.write(groupNum+"\t");
 									maxGroupId++;
 								}
@@ -269,6 +270,7 @@ public class EditJudgePanel{
 									writer.write(modernGroupsConvertMap.get(modernComboIndex)+"\t");
 								else {
 									groupNum++;
+									modernGroupsConvertMap.put(modernComboIndex, groupNum);
 									writer.write(groupNum+"\t");
 									maxGroupId++;
 								}
