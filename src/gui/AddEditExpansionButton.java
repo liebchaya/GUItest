@@ -58,6 +58,7 @@ class AddEditExpansionButtonRenderer extends JButton implements TableCellRendere
 	  private String label;
 	  private String data;
 	  private int parentDesc;
+	  private int auto;
 	  private String tableName;
 
 	  private boolean isPushed;
@@ -86,6 +87,7 @@ class AddEditExpansionButtonRenderer extends JButton implements TableCellRendere
 	    label = (value == null) ? "" : value.toString();
 	    data = table.getValueAt(row, 1).toString();
 	    parentDesc = Integer.parseInt(table.getValueAt(row, 7).toString());
+	    auto = Integer.parseInt(table.getValueAt(row, 9).toString());
 	    button.setText(label);
 	    isPushed = true;
 	    tableName = table.getName();
@@ -112,7 +114,7 @@ class AddEditExpansionButtonRenderer extends JButton implements TableCellRendere
 	    			 if (ancientSet.contains(data))
 	    				 JOptionPane.showMessageDialog(null, "ההרחבה כבר קיימת", "הכנסת נתונים שגויה", 0);
 	    			 else	 
-	    				 EditJudgePanel.ancientExpDm.addRow(new Object[]{data,parentDesc});
+	    				 EditJudgePanel.ancientExpDm.addRow(new Object[]{data,parentDesc,auto});
 	    		 }
 	    		 else {
 	    			 HashSet<String> modernSet = new HashSet<String>();
@@ -121,7 +123,7 @@ class AddEditExpansionButtonRenderer extends JButton implements TableCellRendere
 	    			 if (modernSet.contains(data))
 	    				 JOptionPane.showMessageDialog(null, "ההרחבה כבר קיימת", "הכנסת נתונים שגויה", 0);
 	    			 else {
-	    				 EditJudgePanel.modernExpDm.addRow(new Object[]{data,parentDesc});
+	    				 EditJudgePanel.modernExpDm.addRow(new Object[]{data,parentDesc,auto});
 	    			 }
 	    			 	
 	    			 }

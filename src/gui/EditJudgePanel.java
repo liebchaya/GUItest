@@ -327,7 +327,7 @@ public class EditJudgePanel{
 										writer.write(exp.split("\t")[0]+"\t");
 										writer.write(exp.split("\t")[1]+"\t");
 										writer.write("1\t");
-										writer.write(exp.split("\t")[3]+"\n");
+										writer.write(exp.split("\t")[2]+"\n");
 					    			}
 					    		}
 					    		if(m_modernExpanMap.containsKey(id)){
@@ -336,7 +336,7 @@ public class EditJudgePanel{
 						    			writer.write(exp.split("\t")[0]+"\t");
 										writer.write(exp.split("\t")[1]+"\t");
 										writer.write("0\t");
-										writer.write(exp.split("\t")[3]+"\n");
+										writer.write(exp.split("\t")[2]+"\n");
 					    			}
 					    		}
 					    	}
